@@ -1,0 +1,585 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% load chek_writer_extras %}
+{% block title %} Пациенты поликлиники {% endblock %}
+
+{% block content %}
+<div id="maincontent" class="ui main container" style="margin-top: 30px;">
+    <div class="ui grid">
+		<div class="left floated four wide column">
+			<form action="." method="POST" enctype="multipart/form-data">
+				<div class="profile__form-datas" >
+					{% csrf_token %}
+					<div class="fields">
+						<div class="field">
+							<label for="address">ФИО пациента</label>
+							{{form.t_patients_fk}}
+						</div>
+					</div>
+					<button class="ui right floated button" onclick="get_list_t_patients()" type="button">Поиск</button>
+				</div>
+			</form>
+		</div><br>
+        
+		<div class="ui buttons" >
+            {% check_rule request.user 'Добавить пациента' as check_rule_add_patients %}
+            {% if check_rule_add_patients %}
+			<div class="right floated nine wide column">
+				<button 
+					onclick="document.getElementById('t-patient-modal-id').style.display='block'"
+					class="ui right floated button green">
+					Добавить пациента
+				</button>
+			</div>
+            {% endif %}
+		</div>
+        
+    </div><br><br>
+    <p style="margin-top: auto; margin-bottom: auto;"><input id="show_with_wristband" type="checkbox" onchange="t_patients_with_wristband()"> Показать пациентов с браслетом</p>
+	<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+		<div class="main-title">
+			<h3>Список пациентов</h3>
+		</div>
+	</div>
+    <table class="ui small very compact unstackable selectable orange table" id='patients_table'
+    style="text-align: center;">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>ФИО</th>
+                <th>Номер телефона</th>
+                <th>Дата рождения</th>
+                <th>ОМС/ДМС</th>
+                <th>Начало посещения</th>
+                <th>Конец посещения</th>
+                <th>Девайс</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+                <th>Действие(я)</th>
+            </tr>
+        </thead>
+        <tbody id="tbody_patient">
+            {% if patients %}
+            {% for patient in patients %}
+            <tr>
+                <td id="id_patient" style="display: none;">{{ patient.id }}</td>
+                <td>{{ forloop.counter }} </td>
+                <td>{{ patient.surname}} {{patient.name}} {{patient.patronymic}} </td>
+                <td>{{ patient.phone }} </td>
+                <td>{{ patient.date_of_birth }} </td>
+                <td>{{ patient.OMS }} / {{ patient.DMS }} </td>
+                <td>{{ patient.start_visit }} </td>
+                <td>{{ patient.end_visit }} </td>
+                <td>{% if patient.wristband %}{{ patient.wristband }}{% else %}Неназначен{% endif %}</td>
+                <td>{{ patient.login }}</td>
+                <td>{{ patient.password }}</td>
+                <td>
+                    {% check_rule request.user 'Мониторинг данных пациента' as check_rule_monitoring_patients %}
+                    {% if check_rule_monitoring_patients %}
+                        <a href="{% url 'datail_t_pacient' patient.id  polyclinic.id %}">Посмотреть карту </a>
+                    {% endif %}
+
+                    {% check_rule request.user 'Редактирование пациентов' as check_rule_update_patients %}
+                    {% if check_rule_update_patients %}
+                        / <a onclick="t_patient_update('{{ patient.id }}')" onsubmit="return false;"> Изменить </a> 
+                    {% endif %}
+
+                    {% if patient.wristband %}
+                        {% check_rule request.user 'Открепление браслета' as check_rule_take_away_device %}
+                        {% if check_rule_take_away_device %}
+                            / <a href="{% url 'untie_device' patient.id patient.wristband.id %}"> Открепить браслет </a>
+                        {% endif %}
+                    {% else %}
+                    {% comment %}
+                        {% check_rule request.user 'Установка браслета пациенту' as check_rule_placing_device %}
+                        {% if check_rule_placing_device %}
+                            / <a href="" onsubmit="return false;"> Установить браслет </a>
+                        {% endif %}
+                    {% endcomment %}
+                    {% endif %}
+
+                    {% check_rule request.user 'Открепление пациентов' as check_rule_take_away_patient %}
+
+                    {% if check_rule_take_away_patient %}
+                        / <a href="{% url 'untie_patient' patient.id %}"> Открепить пациента </a>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="12" style="text-align: center;"> Нет данных !</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table><br>
+    
+    <div class="paginator p">
+        <ul id="pag1" style="margin-left: auto; margin-right: auto;">
+            {% if page.has_previous %}
+                <a href="?page={{page.previous_page_number}}">ᐸ</a>
+            {% endif %}
+                страница  {{ page.number }} из {{ page.paginator.num_pages }}
+            {% if page.has_next %}
+                <a class="is-active" href="?page={{ page.next_page_number }}">ᐳ</a>
+            {% endif %}
+        </ul>
+        <ul id="pag2" style="margin-left: auto; margin-right: auto; display: none;">
+            <a href="" id="paginator_prev" style="display: none;" onclick="data_prev();return false;"> ᐸ</a>
+            <div id="paginator_text"></div>
+            <a class="is-active" id="paginator_next" href="" onclick="data_next();return false;" >ᐳ</a>
+        </ul>
+    </div>
+
+    <br><br>
+</div>
+
+<!-- t-patient-modal-id -->
+<div id="t-patient-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_doctor" action="{% url 'create_tethered_patient' polyclinic.id %}" style="margin: 1% auto 8% auto;width:45%"
+		method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 450px;">
+			<label for="edit_fio">Фамилия</label>
+			<input type="text" id="edit_surname" name="surname" class="input_add_note_doctor" required>
+            <label for="edit_fio">Имя</label>
+			<input type="text" id="edit_name" name="name" class="input_add_note_doctor" required>
+            <label for="edit_fio">Отчество</label>
+			<input type="text" id="edit_patronymic" name="patronymic" class="input_add_note_doctor" required>
+
+			<label for="edit_phone">Hомер телефона</label>
+			<input type="tel" pattern="^\+7\d{3}\d{7}$" id="edit_phone" name="phone" class="input_add_note_doctor" required>
+
+            <label for="date_of_birth">Дата рождения</label>
+			<input type="date" class="input_add_note_doctor" name="date_of_birth" required>
+            
+            <label for="edit_oms">ОМС</label>
+            <input type="text" id="edit_oms" name="oms" class="input_add_note_doctor">
+        
+            <label for="edit_dms">ДМС</label>
+            <input type="text" id="edit_dms" name="dms" class="input_add_note_doctor">
+            
+            <label for="date_start">Дата начала посещения</label>
+			<input type="date" class="input_add_note_doctor" name="date_start" required>
+
+            <label for="dat_end">Кол-во дней пребывания</label>
+			<input type="number" min="0" class="input_add_note_doctor" name="date_end" required>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="chek_chekbox_zone"
+				type="submit" onclick="document.getElementById('t-patient-modal-id').style.display='block'">
+				Добавить</button><br>
+			<button type="button" onclick="document.getElementById('t-patient-modal-id').style.display='none'" class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- edit-t-patient-modal-id -->
+<div id="edit-t-patient-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_staff" action="" style="margin: 1% auto 8% auto;width:45%"
+		method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 450px;">
+			<label for="edit_fio">Фамилия</label>
+			<input type="text" id="u_edit_f" name="surname" class="input_add_note_doctor" required>
+            <label for="edit_fio">Имя</label>
+			<input type="text" id="u_edit_i" name="name" class="input_add_note_doctor" required>
+            <label for="edit_fio">Отчество</label>
+			<input type="text" id="u_edit_o" name="patronymic" class="input_add_note_doctor" required>
+
+			<label for="edit_phone">Hомер телефона</label>
+			<input type="tel" pattern="^\+7\d{3}\d{7}$" id="u_phone" name="phone" class="input_add_note_doctor" required>
+
+            <label for="date_of_birth">Дата рождения</label>
+			<input type="date" id="u_date_of_birth" class="input_add_note_doctor" name="date_of_birth" required>
+            
+            <label for="edit_oms">ОМС</label>
+            <input type="text" id="u_edit_oms" name="oms" class="input_add_note_doctor">
+        
+            <label for="edit_dms">ДМС</label>
+            <input type="text" id="u_edit_dms" name="dms" class="input_add_note_doctor">
+            
+            <label for="date_start">Дата начала посещения</label>
+			<input type="datetime-local" id="u_date_start" class="input_add_note_doctor" name="date_start" required>
+
+            <label for="date_end">Кол-во дней пребывания</label>
+			<input type="number" id="u_date_end" min="0" class="input_add_note_doctor" name="date_end" required>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="chek_chekbox_zone"
+				type="submit" onclick="document.getElementById('edit-t-patient-modal-id').style.display='block'">
+				Изменить</button><br>
+			<button type="button" onclick="document.getElementById('edit-t-patient-modal-id').style.display='none'" class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+{{ form.media }}
+
+
+    <!-- <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send">
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket('ws://'+ window.location.host + '/ws/remote/token=dd91836935a0bd5f139d950f540daddd02e987c8/');
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.message + '\n');
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+    </script>  -->
+<script>
+    function get_a_patient_info(id_patient) {
+    var list = {}
+    $.ajax({
+      url: "/account-polyclinic/get_a_patient_info/" + id_patient + "/" + "{{ polyclinic.id }}" + "/",
+      dataType: 'json',
+      success: function (response) {
+        for (i in response) {
+          list = {
+            'id' : response.id,
+                        'name' : response.name,
+                        'surname' : response.surname,
+                        'patronymic' : response.patronymic,
+                        'date_of_birth' : response.date_of_birth,
+                        'phone' : response.phone,
+                        'start_visit' : response.start_visit,
+                        'end_visit' : response.end_visit,
+                        'OMS' : response.OMS,
+                        'DMS' : response.DMS
+          }
+        }
+        console.log(list)
+        let url = '/account-polyclinic/update_tethered_patient/' + list.id + '/{{polyclinic.id}}/';
+                $('.modal_edit_staff').attr('action', url);
+
+                $('#u_edit_f').val(list.surname)
+                $('#u_edit_i').val(list.name)
+                $('#u_edit_o').val(list.patronymic)
+                $('#u_date_of_birth').val(list.date_of_birth)
+                $('#u_phone').val(list.phone)
+
+                // var options = {
+                //     year: 'numeric',
+                //     month: 'long',
+                //     day: 'numeric',
+                //     weekday: 'long',
+                //     timezone: 'UTC',
+                //     hour: 'numeric',
+                //     minute: 'numeric',
+                //     second: 'numeric'
+                // };
+
+                ddd = new Date(list.start_visit).toLocaleString("ru")
+                $('#u_date_start').val(ddd)
+                $('#u_date_end').val(list.end_visit)
+                $('#u_edit_oms').val(list.OMS)
+                $('#u_edit_dms').val(list.DMS)
+
+      }
+    });
+  }
+
+    function t_patient_update(id){
+        get_a_patient_info(id); 
+        document.getElementById('edit-t-patient-modal-id').style.display='block' 
+    }
+
+    function CloseTable(){
+        $('#tbody_patient tr').remove()
+    }
+
+    var count = 1
+
+    function addRow(list){
+        var tbody = document.getElementById('patients_table').getElementsByTagName("TBODY")[0];
+        var row = document.createElement("TR")
+
+        {% check_rule request.user 'Мониторинг данных пациента' as check_rule_monitoring_patients %}
+        {% check_rule request.user 'Редактирование пациентов' as check_rule_update_patients %}
+        {% check_rule request.user 'Открепление браслета' as check_rule_take_away_device %}
+        {% check_rule request.user 'Установка браслета пациента' as check_rule_placing_device %}
+        let patient_card = {% if check_rule_monitoring_patients %} "<a href='../datail_t_pacient/" + list.id + "/{{ polyclinic.id }}/'>Посмотреть карту </a>" {% else %} '' {% endif %}
+
+        let patient_update = {% if check_rule_update_patients %}"/ <a onclick='t_patient_update("+ list.id +")' onsubmit='return false;'> Изменить </a>" {% else %} '' {% endif %}
+        var device_mark = ''
+        if (list.wristband_id){
+            device_mark = {% if check_rule_take_away_device %}'/ <a href=""> Открепить браслет </a>'{% else %} '' {% endif %}
+        }else{
+            device_mark = {% if check_rule_placing_device %} '/ <a href="" onsubmit="return false;"> Установить браслет </a>'{% else %} '' {% endif %}
+        }
+        console.log(count , typeof(count));
+        els_list = [count, list.surname + ' ' + list.name + ' ' + list.patronymic, list.phone, list.date_of_birth, list.OMS + ' / ' + list.DMS, list.start_visit, list.end_visit,
+        list.wristband, list.login, list.password ,patient_card + ' ' + patient_update + ' ' + device_mark]
+        console.log(els_list);
+        for (let i = 0; i < els_list.length; i++) {
+
+            var td = document.createElement("TD")
+            if(i === els_list.length-1){
+                td.innerHTML = els_list[i]
+            }
+            else{
+                td.appendChild(document.createTextNode(els_list[i]))
+            }
+            row.appendChild(td);
+            tbody.appendChild(row);
+        }
+        count = count + 1;
+    }
+
+    function get_list_t_patients(){
+        let search = $('#select2-id_t_patients_fk-container').text()
+        $.ajax({
+			url: "/account-polyclinic/get_list_t_patients/{{ polyclinic.id }}/?q=" + search,
+			dataType: 'json',
+			success: function (response) {
+                var list = [];
+                console.log(response);
+                for (i in response) {
+                    list.push({
+                        'id' : response[i].id,
+                        'name' : response[i].name,
+                        'surname' : response[i].surname,
+                        'patronymic' : response[i].patronymic,
+                        'date_of_birth' : response[i].date_of_birth,
+                        'phone' : response[i].phone,
+                        'start_visit' : new Date(response[i].start_visit).toLocaleString("ru"),
+                        'end_visit' : new Date(response[i].end_visit).toLocaleString("ru"),
+                        'OMS' : response[i].OMS,
+                        'DMS' : response[i].DMS,
+                        'wristband_id' : response[i].wristband_id,
+                        'wristband' : response[i].wristband ? response[i].wristband : "Не назначен",
+                        'login': response[i].login,
+                        'password': response[i].password,
+                    })
+                }
+                CloseTable()
+                list.forEach(element => {
+                    addRow(element)
+                });
+                count = 1
+			}
+		});
+    }
+
+    const set_count = 50 // Шаг пагинации
+    let start = 50 // начальные при загрузке  = set_count, но изменяются активно
+    
+    function data_next(){
+        const counter_start = start
+        const counter_end = counter_start + set_count - 1
+        start = counter_end + 1
+
+        load(counter_start, counter_end)
+
+        $('#paginator_prev').show()
+    }
+
+    function data_prev(){
+        const counter_end = start - set_count
+        const counter_start = counter_end - set_count
+        start = start - set_count
+
+        load(counter_start, counter_end)
+
+        $('#paginator_next').show()
+    }
+
+    function load(counter_start, counter_end){
+        console.log('///////////////////////////////')
+        console.log(counter_start, counter_end, start)
+        const url_str = "/account-polyclinic/t_patients_with_wristband/{{ polyclinic.id }}/?s=" + counter_start + "&e=" + counter_end
+        $.ajax({
+            url: url_str,
+            dataType: 'json',
+            success: function (response) {
+                let count_pages, current_page
+                count_pages = response.paginator.count_pages
+                current_page = response.paginator.current_page
+
+                if (current_page == count_pages){
+                    $('#paginator_next').hide()
+                }
+
+                if (current_page === 1){
+                    $('#paginator_prev').hide()
+                }
+                var list = [];
+                response.data.forEach(i => {
+                    list.push({
+                        'id' : i.id,
+                        'name' : i.name,
+                        'surname' : i.surname,
+                        'patronymic' : i.patronymic,
+                        'date_of_birth' : i.date_of_birth,
+                        'phone' :i.phone,
+                        'start_visit' : new Date(i.start_visit).toLocaleString("ru"),
+                        'end_visit' : new Date(i.end_visit).toLocaleString("ru"),
+                        'OMS' : i.OMS,
+                        'DMS' : i.DMS,
+                        'wristband_id' : i.wristband_id,
+                        'wristband' : i.wristband,
+                        'login': i.login,
+                        'password': i.password,
+                    })
+                });
+
+                $('#pag2 #paginator_text').text("страница  " + current_page +" из " + count_pages)
+
+                CloseTable()
+                list.forEach(element => {
+                    addRow(element)
+                });
+                count = 1
+            }
+        });
+    }
+
+    function t_patients_with_wristband(){ 
+        fl = $('#show_with_wristband').prop('checked');
+        if(fl){
+            $.ajax({
+                url: "/account-polyclinic/t_patients_with_wristband/{{ polyclinic.id }}/" ,
+                dataType: 'json',
+                success: function (response) {
+                    let count_pages, current_page
+                    count_pages = response.paginator.count_pages
+                    current_page = response.paginator.current_page
+
+                    if (current_page == count_pages){
+                        $('#paginator_next').hide()
+                    }
+                    
+                    $('#pag1').hide()
+                    $('#pag2 #paginator_text').text("страница  " + current_page +" из " + count_pages)
+                    $('#pag2').css('display', 'flex')
+                    var list = [];
+                    console.log(response.data);
+                    response.data.forEach(i => {
+                        list.push({
+                            'id' : i.id,
+                            'name' : i.name,
+                            'surname' : i.surname,
+                            'patronymic' : i.patronymic,
+                            'date_of_birth' : i.date_of_birth,
+                            'phone' :i.phone,
+                            'start_visit' : new Date(i.start_visit).toLocaleString("ru"),
+                            'end_visit' : new Date(i.end_visit).toLocaleString("ru"),
+                            'OMS' : i.OMS,
+                            'DMS' : i.DMS,
+                            'wristband_id' : i.wristband_id,
+                            'wristband' : i.wristband,
+                            'login': i.login,
+                            'password': i.password,
+                        })
+                    });
+
+                    $('#pag2 #paginator_text').text("страница  " + current_page +" из " + count_pages)
+                    $('#pag2').css('display', 'flex')
+                    CloseTable()
+                    list.forEach(element => {
+                        addRow(element)
+                    });
+                    count = 1
+                }
+            });
+        }
+
+        else{
+            location.reload();
+        }
+    }
+</script>
+
+<style>
+#paginator_text{
+    margin: auto 5px;
+}
+
+.paginator a{
+    font-weight: 800;
+    color: black;
+}
+
+.paginator{
+    font-size: large;
+    max-width: 250px;
+    padding-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 50px;
+}
+
+.paginator{
+  padding: 30px 0;
+}
+
+.paginator ul{  
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.paginator a{
+  display: inline-block;
+  padding: 10px 18px;
+  color: #222;
+}
+
+.p{
+	min-width: 300px;
+    display: flex;
+    margin: auto;
+}
+
+.p a{
+  background-color: #2ecc71;
+  margin: auto 5px;
+  color: #fff;
+  border: 3px solid #2ecc71;
+  position: relative;
+}
+
+.p .is-active{
+  font-weight: bold;
+}
+
+td a{
+    cursor: pointer;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--single {
+    height: 30px !important;
+    line-height: 15px !important;
+}
+
+.ui[class*="right floated"].button, .ui[class*="right floated"].buttons {
+    float: left;
+    margin-left: 0em !important;
+    margin-top: 10px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Запись СЭС {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}	
+
+<div id="maincontent" class="ui main container" style="margin-top: 130px; ">
+	<div class="ui stackable grid">
+		<!-- <div class=" wide column"></div> -->
+		<div class="ui twenty equal width form" style="margin-bottom: 25px;">
+			<h3>Заполните данные !</h3>
+			{{forms.errors}}
+			<form action="." method="POST" enctype="multipart/form-data">
+				<div class="profile__form-datas" >
+					{% csrf_token %}
+					<div class="fields"style="border: 1px solid green;padding: 15px;margin-bottom: 10px;">
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.epid_number.errors}}
+							</div>
+							<label>Эпид. номер: </label>
+							{{forms.epid_number}}
+						</div>
+					</div>
+					<br>
+					<div class="block_one" style="border: 1px solid red ;padding: 15px;margin-bottom: 10px;">
+						<div class="fields">
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.attachment_to_the_medical_device.errors}}
+								</div>
+								<label>Прикрепление к поликлинике: </label>
+								{{forms.attachment_to_the_medical_device}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.date_of_receipt.errors}}
+								</div>
+								<label>Дата приёма: </label>
+								{{forms.date_of_receipt}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.time_of_receipt.errors}}
+								</div>
+								<label>Часы приёма: </label>
+								{{forms.time_of_receipt}}
+							</div>
+						</div>
+					</div>
+					<div class="block_two" style="border: 1px solid green ;padding: 15px;">
+						<div class="fields">
+							<div class="field">
+								<label>Имя</label>
+								{{ forms.name }}
+							</div>
+							<div class="field">
+								<label>Фамилия</label>
+								{{ forms.surname }}
+							</div>
+							<div class="field">
+								<label>Отчество</label>
+								{{ forms.patronymic }}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.date_of_birth.errors}}
+								</div>
+								<label>Дата рождения: </label>
+								{{forms.date_of_birth}}
+							</div>
+							
+						</div>
+						<div class="fields">
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.address_fk.errors}}
+								</div>
+								<label>Улица: </label>
+								{{forms.address_fk}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.house.errors}}
+								</div>
+								<label>Дом: </label>
+								{{forms.house}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.apartment.errors}}
+								</div>
+								<label>Квартира: </label>
+								{{forms.apartment}}
+							</div>
+						</div>
+						<div class="fields">
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.phone_number.errors}}
+								</div>
+								<label>Номер телефона: </label>
+								{{forms.phone_number}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.place_of_work_or_study.errors}}
+								</div>
+								<label>Место работы/учебы: </label>
+								{{forms.place_of_work_or_study}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.date_of_last_visit_to_the_place_of_work.errors}}
+								</div>
+								<label>Дата последнего посещения места работы / учёбы: </label>
+								{{forms.date_of_last_visit_to_the_place_of_work}}
+							</div>
+						</div>
+					</div><br>
+					<div class="block_zero" style="border: 1px solid red ;padding: 15px;margin-bottom: 10px;">
+						<div class="fields">
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.date_of_illness.errors}}
+								</div>
+								<label>Дата заболевания: </label>
+								{{forms.date_of_illness}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.diagnosis.errors}}
+								</div>
+								<label>Диагноз: </label>
+								{{forms.diagnosis}}
+							</div>
+						</div>
+						<div class="fields">
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.severity.errors}}
+								</div>
+								<label>Степень тяжести: </label>
+								{{forms.severity}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.date_of_establishment.errors}}
+								</div>
+								<label>Дата установления : </label>
+								{{forms.date_of_establishment}}
+							</div>
+
+						</div>
+					</div>
+					<div class="block_three" style="border: 1px solid green ;padding: 15px;">
+						<div class="fields">
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.date_of_hospitalization.errors}}
+								</div>
+								<label>Дата госпитализации: </label>
+								{{forms.date_of_hospitalization}}
+							</div>
+							<div class="field">
+								<div class="alert alert-danger" style="font-size: 15px; color: red;">
+									{{forms.place_of_hospitalization.errors}}
+								</div>
+								<label>Место госпитализации: </label>
+								{{forms.place_of_hospitalization}}
+							</div>
+						</div>
+					</div>
+					<br>
+					<div class="fields">
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.date_of_initial_appeal.errors}}
+							</div>
+							<label>Дата первичного обращения : </label>
+							{{forms.date_of_initial_appeal}}
+						</div>
+					</div>
+					<br>
+					<div class="fields">
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.laboratory_research.errors}}
+							</div>
+							<label>Лабораторное исследование: </label>
+							{{forms.laboratory_research}}
+						</div>
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.research_result.errors}}
+							</div>
+							<label>Результат исследование: </label>
+							{{forms.research_result}}
+						</div>
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.date_study.errors}}
+							</div>
+							<label>Дата исследование: </label>
+							{{forms.date_study}}
+						</div>
+					</div>
+					<br>
+					<div class="fields">
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.discharge_date.errors}}
+							</div>
+							<label>Дата выписки: </label>
+							{{forms.discharge_date}}
+						</div>
+					</div>
+					<div class="fields">
+
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{forms.note.errors}}
+							</div>
+							<label>Примечание: </label>
+							{{forms.note}}
+						</div>
+					</div>
+					<button type="submit" name="continue" value="continue" class="ui right floated button">Добавить и продолжить</button>
+					<button type="submit" name="dont_continue" value="dont_continue" class="ui right floated button">Добавить</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{{ forms.media }}
+
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+*.pyc
+*.log
+*.log.*
+*.sqlite3
+registration/logs
+*.log.save
+*.save.*
+*.save
+__pycache__/
+.vscode
+test/
+vevn/
+req.txt
+media/
+

@@ -1,0 +1,2311 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %} Карта пациента {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}
+<div class="ui main container">
+	<div class="ui stackable grid" style="margin-top: 5px">
+        <div class="ui stackable grid">
+
+            <div class="twenty wide column">
+                    <table class="ui small very compact unstackable selectable table" id="myTable_two"
+                        style="text-align: center;">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if current_pacient %}
+                            <tr>
+                                <td>Ф.И.О.</td>
+                                <th>{{current_pacient.name}} {{current_pacient.surname}} {{current_pacient.patronymic}}</th>
+                                <td>Контактный номер</td>
+                                <td>{{current_pacient.phone_number}}</td>
+                            </tr>
+                            
+                            {% else %}
+                            <tr>
+                                <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                <div class="ui stackable grid">
+                    <div class="seven wide column">
+                        <form method="GET" action="" name="filter">
+                            <label for="">Дата: </label><br>
+                            <label for=""> <b>C</b></label>
+                            <input type="date" name="date_to"  value="{% if date_now %}{{date_now}}{% else %}{{datetime}}{% endif %}"><br><br>
+                            <label for=""> <b>По</b> </label>
+                            <input type="date" name="date"  value="{% if date %}{{date}}{% else %}{{datetime}}{% endif %}"><br><br>
+                            <label for="">Время:</label><br>
+                            <label for=""> <b>C</b></label>
+                            <input type="time" name='time_from' value="{% if time_from_search %}{{time_from_search}}{% endif %}">
+                            <label for=""> <b>По</b> </label>
+                            <input type="time" name='time_to' value="{% if time_to_search %}{{time_to_search}} {% endif %}"><br><br>
+                            <button type="submit" class="ui button">
+                                Поиск
+                            </button>
+                        </form>
+                    </div>
+                    <div class="seven wide column">
+                        <div class="checkboxex">
+                            <div class="text_filter">Фильтр для графика:</div>
+                            <div class="item_checkbox">
+                                <input type="checkbox" id="crit_check" name="crit_check" onchange="schedule();">
+                                <label for="crit_check">Границы критических показателей</label>
+                            </div>
+                            <!-- <div class="item_checkbox">
+                                <input type="checkbox" id="zone_check" name="zone_check" onchange="schedule()">
+                                <label for="zone_check">Границы зоны риска</label>
+                            </div> -->
+                            <div class="item_checkbox">
+                                <input type="checkbox" id="ma_check" name="ma_check" onchange="schedule()">
+                                <label for="ma_check">Скользящая средняя</label>
+                            </div>
+                            <div class="item_checkbox">
+                                <input type="checkbox" id="trand_check" name="trand_check" onchange="schedule()">
+                                 <label for="trand_check">Границы развития тенденции</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="title_pressure">
+                        <hr>
+                        <div id="title_pressure_content">
+                            Пульс
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="seven wide column">
+                        <div class="change">
+                            <div class="change_title">
+                                <h4>Границы критических показателей пульса</h4>
+                                <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                            </div>
+                            <div class="change_content">
+                                <table class="ui table">
+                                    <tbody>
+                                        <tr >
+                                            <td class="collapsing" width="80">
+                                                Мин. значение
+                                            </td>
+                                            <td><input type="number" id="pulse_min" maxlength="3" value="{{current_pacient.critical_params.pulse_min}}" style="width: 50px;float: right;"></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="80">
+                                                Макс. значение
+                                            </td>
+                                            <td><input type="number" id="pulse_max" value="{{current_pacient.critical_params.pulse_max}}" style="width: 50px;float: right;"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button class="ui button" id="parameters_pulse" style="float: right;">Сохранить</button>
+                            <div class="change_title"></div></div>
+                        <div class="change_content"></div></div>
+                    </div>
+
+                    <!-- <div class="seven wide column">
+                        <h4>Границы зоны пульса</h4>
+                        <table class="ui table">
+                            <tbody>
+                                <tr >
+                                    <td class="collapsing" width="80">
+                                        Мин. значение
+                                    </td>
+                                    <td><input type="number" id="pulse_zone_min" maxlength="3" value="{{current_pacient.critical_params.pulse_zone_min}}" style="width: 50px;float: right;"></td>
+                                </tr>
+                                <tr>
+                                    <td width="80">
+                                        Макс. значение
+                                    </td>
+                                    <td><input type="number" id="pulse_zone_max" value="{{current_pacient.critical_params.pulse_zone_max}}" style="width: 50px;float: right;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="ui button" id="parameters_zone_pulse" style="float: right;">Сохранить</button>
+                    </div> -->
+
+                    <div class="seven wide column">
+                        <div class="change">
+                            <div class="change_title">
+                                <h4>Границы развития тенденции пульса</h4>
+                                <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                            </div>
+                            <div class="change_content">
+                                <table class="ui table">
+                                    <tbody>
+                                        <tr >
+                                            <td class="collapsing" width="80">
+                                                Мин. значение
+                                            </td>
+                                            <td><input type="number" id="pulse_trand_min" min="0" maxlength="3" value="{{current_pacient.critical_params.pulse_trand_min}}" style="width: 50px;float: right;"></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="80">
+                                                Макс. значение
+                                            </td>
+                                            <td><input type="number" id="pulse_trand_max" min="0" value="{{current_pacient.critical_params.pulse_trand_max}}" style="width: 50px;float: right;" ></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button class="ui button" id="parameters_trand_pulse" style="float: right;">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="title_pressure">
+                        <hr>
+                        <div id="title_pressure_content">
+                            Оксигенация
+                        </div>
+                        <hr>
+                    </div>
+
+                    <div class="seven wide column">
+                        <div class="change">
+                            <div class="change_title">
+                                <h4>Границы критических показателей оксигенации</h4>
+                                <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                            </div>
+                            <div class="change_content">
+                                <table class="ui table">
+                                    <tbody>
+                                        <tr >
+                                            <td class="collapsing" width="80">
+                                                Мин. значение
+                                            </td>
+                                            <td><input type="number" id="bo_min" value="{{current_pacient.critical_params.bo_min}}" style="width: 50px;float: right;"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button class="ui button" id="parameters_oxygin" style="float: right;">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="seven wide column">
+                        <h4>Зону минимального значения оксигенации</h4>
+                        <table class="ui table">
+                            <tbody>
+                                <tr >
+                                    <td class="collapsing" width="80">
+                                        Мин. значение
+                                    </td>
+                                    <td><input type="number" id="bo_zone_min" value="{{current_pacient.critical_params.bo_zone_min}}" style="width: 50px;float: right;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="ui button" id="parameters_zone_oxygin" style="float: right;">Сохранить</button>
+                    </div> -->
+                    
+                    <div class="seven wide column">
+                        <div class="change">
+                            <div class="change_title">
+                                <h4>Границы развития тенденции оксигенации</h4>
+                                <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                            </div>
+                            <div class="change_content">
+                                <table class="ui table">
+                                    <tbody>
+                                        <tr >
+                                            <td class="collapsing" width="80">
+                                                Мин. значение
+                                            </td>
+                                            <td><input type="number" id="bo_trand_min" min="0" maxlength="3" value="{{current_pacient.critical_params.bo_trand_min}}" style="width: 50px;float: right;"></td>
+                                        </tr>
+                                        <!-- <tr>
+                                            <td width="80">
+                                                Макс. значение
+                                            </td>
+                                            <td><input type="number" id="bo_trand_max" min="0" value="{{current_pacient.critical_params.bo_trand_max}}" style="width: 50px;float: right;"></td>
+                                        </tr> -->
+                                    </tbody>
+                                </table>
+                                <button class="ui button" id="parameters_trand_oxygin" style="float: right;">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="title_pressure">
+                        <hr>
+                        <div id="title_pressure_content">
+                            Тонометр
+                        </div>
+                        <hr>
+                    </div>
+                    <div id="title_pressure">
+                        <hr>
+                        <div id="title_pressure_content">
+                            Систолическое давление
+                        </div>
+                        <hr>
+                    </div>
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Границы критических показателей</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_hp_min" value="{{current_pacient.critical_params.tonometer_hp_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_hp_max" value="{{current_pacient.critical_params.tonometer_hp_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_tonometer_hp" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- <div class="seven wide column">
+                    <h4>Границы зоны тонометра</h4>
+                    <table class="ui table">
+                        <tbody>
+                            <tr >
+                                <td class="collapsing" width="80">
+                                    Мин. значение
+                                </td>
+                                <td><input type="number" id="tonometer_hp_zone_min" maxlength="3" value="{{current_pacient.critical_params.tonometer_hp_zone_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+                            </tr>
+                            <tr>
+                                <td width="80">
+                                    Макс. значение
+                                </td>
+                                <td><input type="number" id="tonometer_hp_zone_max" value="{{current_pacient.critical_params.tonometer_hp_zone_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="ui button" id="parameters_zone_tonometer_hp" style="float: right;">Сохранить</button>
+                </div> -->
+
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Границы тренда тонометра</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_hp_trand_min" maxlength="3" value="{{current_pacient.critical_params.tonometer_hp_trand_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_hp_trand_max" value="{{current_pacient.critical_params.tonometer_hp_trand_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_trand_tonometer_hp" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="title_pressure">
+                    <hr>
+                    <div id="title_pressure_content">
+                        Диастолическое давление
+                    </div>
+                    <hr>
+                </div>
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Границы критических показателей</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_lp_min" value="{{current_pacient.critical_params.tonometer_lp_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_lp_max" value="{{current_pacient.critical_params.tonometer_lp_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_tonometer_lp" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- <div class="seven wide column">
+                    <h4>Границы зоны тонометра</h4>
+                    <table class="ui table">
+                        <tbody>
+                            <tr >
+                                <td class="collapsing" width="80">
+                                    Мин. значение
+                                </td>
+                                <td><input type="number" id="tonometer_lp_zone_min" maxlength="3" value="{{current_pacient.critical_params.tonometer_lp_zone_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+                            </tr>
+                            <tr>
+                                <td width="80">
+                                    Макс. значение
+                                </td>
+                                <td><input type="number" id="tonometer_lp_zone_max" value="{{current_pacient.critical_params.tonometer_lp_zone_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="ui button" id="parameters_zone_tonometer_lp" style="float: right;">Сохранить</button>
+                </div> -->
+
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Границы тренда тонометра</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_lp_trand_min" maxlength="3" value="{{current_pacient.critical_params.tonometer_lp_trand_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="tonometer_lp_trand_max" value="{{current_pacient.critical_params.tonometer_lp_trand_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_trand_tonometer_lp" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+
+                </div>
+    
+                <div id="title_pressure">
+                    <hr>
+                    <div id="title_pressure_content">
+                        Дистанция
+                    </div>
+                    <hr>
+                </div>
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Введите границы критических показателей</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="distance_min" min="0" max="100000" value="{{current_pacient.critical_params.distance_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="distance_max" min="0" max="100000" value="{{current_pacient.critical_params.distance_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_distance" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="seven wide column">
+                    <h4>Границы зоны дистанции</h4>
+                    <table class="ui table">
+                        <tbody>
+                            <tr >
+                                <td class="collapsing" width="80">
+                                    Мин. значение
+                                </td>
+                                <td><input type="number" id="distance_zone_min" min="0" max="1000000" maxlength="3" value="{{current_pacient.critical_params.distance_zone_min}}" style="width: 50px;float: right;"></td>
+                            </tr>
+                            <tr>
+                                <td width="80">
+                                    Макс. значение
+                                </td>
+                                <td><input type="number" id="distance_zone_max" min="0" max="1000000" value="{{current_pacient.critical_params.distance_zone_max}}" style="width: 50px;float: right;" ></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="ui button" id="parameters_zone_distance" style="float: right;">Сохранить</button>
+                </div> -->
+
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Границы тренды дистанции</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="distance_trand_min" min="0" max="1000000" maxlength="3" value="{{current_pacient.critical_params.distance_trand_min}}" style="width: 50px;float: right;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="distance_trand_max" min="0" max="1000000" value="{{current_pacient.critical_params.distance_trand_max}}" style="width: 50px;float: right;" ></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_trand_distance" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+             
+                <div id="title_pressure">
+                    <hr>
+                    <div id="title_pressure_content">
+                        Калории
+                    </div>
+                    <hr>
+                </div>
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Введите границы критических показателей</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="calories_min" min="0" max="1000000" value="{{current_pacient.critical_params.calories_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="calories_max" min="0" max="1000000" value="{{current_pacient.critical_params.calories_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_pulse" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="seven wide column">
+                    <h4>Границы зоны калорий</h4>
+                    <table class="ui table">
+                        <tbody>
+                            <tr >
+                                <td class="collapsing" width="80">
+                                    Мин. значение
+                                </td>
+                                <td><input type="number" id="calories_zone_min" min="0" max="1000000" maxlength="3" value="{{current_pacient.critical_params.calories_zone_min}}" style="width: 50px;float: right;"></td>
+                            </tr>
+                            <tr>
+                                <td width="80">
+                                    Макс. значение
+                                </td>
+                                <td><input type="number" id="calories_zone_max" min="0" max="1000000" value="{{current_pacient.critical_params.calories_zone_max}}" style="width: 50px;float: right;" ></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="ui button" id="parameters_pulse" style="float: right;">Сохранить</button>
+                </div> -->
+
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Границы тренды калорий</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="calories_trand_min" min="0" max="1000000" maxlength="3" value="{{current_pacient.critical_params.calories_trand_min}}" style="width: 50px;float: right;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="calories_trand_max" min="0" max="1000000" value="{{current_pacient.critical_params.calories_trand_max}}" style="width: 50px;float: right;" ></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_pulse" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="title_pressure">
+                    <hr>
+                    <div id="title_pressure_content">
+                        Температура
+                    </div>
+                    <hr>
+                </div>
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Введите границы критических показателей температуры</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="temperature_min" min="0" maxlength="3" value="{{current_pacient.critical_params.temperature_min}}" style="width: 50px;float: right;" ></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="temperature_max" min="0" value="{{current_pacient.critical_params.temperature_max}}" style="width: 50px;float: right;" ></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_temperature" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="seven wide column">
+                    <div class="change">
+                        <div class="change_title">
+                            <h4>Введите границы развития тенденции температуры</h4>
+                            <div class="change_img" ><img src="{% static 'img/LogoMark.png' %}" alt=""></div>
+                        </div>
+                        <div class="change_content">
+                            <table class="ui table">
+                                <tbody>
+                                    <tr >
+                                        <td class="collapsing" width="80">
+                                            Мин. значение
+                                        </td>
+                                        <td><input type="number" id="temperature_trand_min" min="0" maxlength="3" value="{{current_pacient.critical_params.temperature_trand_min}}" style="width: 50px;float: right;" ></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="80">
+                                            Макс. значение
+                                        </td>
+                                        <td><input type="number" id="temperature_trand_max" min="0" value="{{current_pacient.critical_params.temperature_trand_max}}" style="width: 50px;float: right;" ></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="ui button" id="parameters_trand_temperature" style="float: right;">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+                <div class="column" style="margin-top: 30px;">
+                    <div class="tabs" style="margin-bottom: 30px;">
+
+                    <input type="radio" name="tab-btn" id="tab-btn-1" value="" data-toggle="tab">
+                    <label for="tab-btn-1">Список показаний пульса</label>
+                    <input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+                    <label for="tab-btn-2">График показаний пульса</label>
+
+                    <input type="radio" name="tab-btn" id="tab-btn-3" value="" data-toggle="tab">
+                    <label for="tab-btn-3">Список показаний оксигенации</label>
+                    <input type="radio" name="tab-btn" id="tab-btn-4" data-toggle="tab" value="">
+                    <label for="tab-btn-4">График показаний оксигенации</label>
+
+                    <input type="radio" name="tab-btn" id="tab-btn-5" value="" data-toggle="tab">
+                    <label for="tab-btn-5">Список показаний тонометра</label>
+                    <input type="radio" name="tab-btn" id="tab-btn-6" data-toggle="tab" value="">
+                    <label for="tab-btn-6">График показаний тонометра</label>
+
+                    
+                    <!-- <input type="radio" name="tab-btn" id="tab-btn-7" value="" data-toggle="tab" checked>
+                    <label for="tab-btn-7">Список показаний дистанции</label>
+                    <input type="radio" name="tab-btn" id="tab-btn-8" data-toggle="tab" value="">
+                    <label for="tab-btn-8">График показаний дистанции</label> -->
+
+                    
+                    <input type="radio" name="tab-btn" id="tab-btn-9" value="" data-toggle="tab">
+                    <label for="tab-btn-9">Список показаний калорий</label>
+                    <!-- <input type="radio" name="tab-btn" id="tab-btn-10" data-toggle="tab" value="">
+                    <label for="tab-btn-10">График показаний калорий</label> -->
+
+
+                    <input type="radio" name="tab-btn" id="tab-btn-11" value="" data-toggle="tab" checked>
+                    <label for="tab-btn-11">Список показаний температуры</label>
+                    <input type="radio" name="tab-btn" id="tab-btn-12" data-toggle="tab" value="">
+                    <label for="tab-btn-12">График показаний температуры</label> 
+                   
+    
+                    <div id="content-1">
+                        <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+                            <thead style="font-size: 11px; text-align: center;">
+                                <tr>
+                                    <th width="5" >№</th>
+                                    <th width="20">Показания</th>
+                                    <th width="80">Дата измерения</th>
+                                    <th width="200">Название устройства</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 11px; text-align: center;">
+                                {% if devices_HR %}
+                                {% for count, device in devices_HR %}
+                                <tr>
+                                    <td>{{count}}</td>
+                                    <td>{{device.HR}}</td>
+                                    <td>{{device.get_time}}</td>
+                                    <td>{{device.android_mac.mac_adress}}</td>
+                                {% endfor %}
+    
+                                {% else %}
+                                <tr>
+                                    <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="content-2">
+                        <canvas id="speedChart_pulse" width="450" height="150"></canvas>
+                    </div>
+                    <div id="content-3">
+                            <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+                                <thead style="font-size: 11px; text-align: center;">
+                                    <tr>
+                                        <th width="5" >№</th>
+                                        <th width="20">Показания</th>
+                                        <th width="80">Дата измерения</th>
+                                        <th width="200">Название устройства</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 11px; text-align: center;">
+                                    {% if devices_BO %}
+                                    {% for count, device in devices_BO %}
+                                    <tr>
+                                        <td>{{count}}</td>
+                                        <td>{{device.BO}}</td>
+                                        <td>{{device.get_time}}</td>
+                                        <td>{{device.android_mac.mac_adress}}</td>
+                                    {% endfor %}
+    
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="content-4">
+                            <canvas id="speedChart_oxygen" width="550" height="250"></canvas>
+                        </div>
+    
+                         
+                        <div id="content-5">
+                            <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+                                <thead style="font-size: 11px; text-align: center;">
+                                    <tr>
+                                        <th width="5" >№</th>
+                                        <th width="200">Систолическое давление / Диастолическое давление</th>
+                                        <th width="80">Дата измерения</th>
+                                        <th width="200">Название устройства</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 11px; text-align: center;">
+                                    {% if devices_Tonometer %}
+                                    {% for count, device in devices_Tonometer %}
+                                    <tr>
+                                        <td>{{count}}</td>
+                                        <td>{{device.HP}} / {{device.LP}}</td>
+                                        <td>{{device.get_time}}</td>
+                                        <td>{{device.android_mac.mac_adress}}</td>
+                                    {% endfor %}
+    
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="content-6">
+                            <canvas id="speedChart_tonometer" width="550" height="250"></canvas>
+                        </div>
+
+                        
+                        <div id="content-7">
+                            <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+                                <thead style="font-size: 11px; text-align: center;">
+                                    <tr>
+                                        <th width="5" >№</th>
+                                        <th width="200">Шагов / Метров</th>
+                                        <th width="80">Дата измерения</th>
+                                        <th width="200">Название устройства</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 11px; text-align: center;">
+                                    {% if devices_Distance %}
+                                    {% for count, device in devices_Distance %}
+                                    <tr>
+                                        <td>{{count}}</td>
+                                        <td>{{device.CountStp}} / {{device.metrs}}</td>
+                                        <td>{{device.get_time}}</td>
+                                        <td>{{device.android_mac.mac_adress}}</td>
+                                    {% endfor %}
+    
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="content-8">
+                            <canvas id="speedChart_distance" width="550" height="250"></canvas>
+                        </div>
+    
+                        <div id="content-9">
+                        <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+                            <thead style="font-size: 11px; text-align: center;">
+                                <tr>
+                                    <th width="5" >№</th>
+                                    <th width="200">Калорий</th>
+                                    <th width="80">Дата измерения</th>
+                                    <th width="200">Название устройства</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 11px; text-align: center;">
+                                {% if devices_Calories %}
+                                {% for count, device in devices_Calories %}
+                                <tr>
+                                    <td>{{count}}</td>
+                                    <td>{{device.kilocalories}}</td>
+                                    <td>{{device.get_time}}</td>
+                                    <td>{{device.android_mac.mac_adress}}</td>
+                                {% endfor %}
+    
+                                {% else %}
+                                <tr>
+                                    <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="content-10">
+                        <canvas id="speedChart_calories" width="550" height="250"></canvas>
+                    </div>
+
+                    <div id="content-11">
+                        <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+                            <thead style="font-size: 11px; text-align: center;">
+                                <tr>
+                                    <th width="5" >№</th>
+                                    <th width="20">Показания</th>
+                                    <th width="80">Дата измерения</th>
+                                    <th width="200">Название устройства</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 11px; text-align: center;">
+                                {% if devices_Thermometer %}
+                                {% for count, device in devices_Thermometer %}
+                                <tr>
+                                    <td>{{count}}</td>
+                                    <td>{{device.TM}}</td>
+                                    <td>{{device.get_time}}</td>
+                                    <td>{{device.android_mac.mac_adress}}</td>
+                                {% endfor %}
+    
+                                {% else %}
+                                <tr>
+                                    <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="content-12">
+                        <canvas id="speedChart_termometer" width="450" height="150"></canvas>
+                    </div>
+
+                    <!-- <div id="content-3">
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .change{
+        -ms-user-select: none;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    .change_title{
+        font-size: larger;
+        width: 100%;
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .change_title h4{
+        width: 90%;
+        max-width: 300px;
+    }
+
+    .change_content{
+        display: none;
+    }
+
+    .change_img{
+        width: 10%;
+        max-height: 40px;
+        max-width: 40px;
+        min-height: 30px;
+        min-width: 30px;
+        margin-left: 5px;
+        margin-top: auto;
+        margin-bottom: auto;
+        margin-bottom: 10px;
+    }
+
+    .change_img img{
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .change_img_rotate{
+        transform: rotate(90deg);
+        animation-name: rotate_img;
+        animation-duration: 0.6s;
+        animation-direction: alternate;
+    }
+
+    @keyframes rotate_img {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(90deg);
+        }
+    }
+</style>
+<script>
+    $('.change .change_title').on('click', accordion);
+    function accordion(){
+        $(this).next().slideToggle(80);
+        $(this).children().eq(1).toggleClass("change_img_rotate");
+    }
+</script>
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script>
+    $('#parameters_oxygin').on('click', function(){
+        let bo_min = $('#bo_min').val();
+        let urls = '/set-params-oxygin-from-polyclinic/{{current_pacient.id}}/?bo_min=' + bo_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+
+    $('#parameters_pulse').on('click', function(){
+        let pulse_max = $('#pulse_max').val();
+        let pulse_min = $('#pulse_min').val();
+        let urls = '/set-params-pulse-from-polyclinic/{{current_pacient.id}}/?pulse_max=' + pulse_max + '&pulse_min=' + pulse_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_zone_oxygin').on('click', function(){
+        let bo_zone_min = $('#bo_zone_min').val();
+        let urls = '/set-params-zone-oxygin-from-polyclinic/{{current_pacient.id}}/?bo_zone_min=' + bo_zone_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+
+    $('#parameters_zone_pulse').on('click', function(){
+        let pulse_zone_max = $('#pulse_zone_max').val();
+        let pulse_zone_min = $('#pulse_zone_min').val();
+        let urls = '/set-params-zone-pulse-from-polyclinic/{{current_pacient.id}}/?pulse_zone_max=' + pulse_zone_max + '&pulse_zone_min=' + pulse_zone_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_oxygin').on('click', function(){
+        let trand_bo_max = $('#bo_trand_max').val();
+        let trand_bo_min = $('#bo_trand_min').val();
+        let urls = '/set-params-trand-bo-from-polyclinic/{{current_pacient.id}}/?trand_bo_max=' + trand_bo_max + '&trand_bo_min=' + trand_bo_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_pulse').on('click', function(){
+        let trand_pulse_max = $('#pulse_trand_max').val();
+        let trand_pulse_min = $('#pulse_trand_min').val();
+        let urls = '/set-params-trand-pulse-from-polyclinic/{{current_pacient.id}}/?trand_pulse_max=' + trand_pulse_max + '&trand_pulse_min=' + trand_pulse_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_distance').on('click', function(){
+        let distance_min = $('#distance_min').val();
+        let distance_max = $('#distance_max').val();
+        //if (distance_min < 0) {distance_min = 0}
+        let urls = '/set-params-distance-from-polyclinic/{{current_pacient.id}}/?distance_min=' + distance_min + '&distance_max=' + distance_max + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_distance').on('click', function(){
+        let distance_trand_max = $('#distance_trand_max').val();
+        let distance_trand_min = $('#distance_trand_min').val();
+        let urls = '/set-params-trand-distance-from-polyclinic/{{current_pacient.id}}/?distance_trand_max=' + distance_trand_max + '&distance_trand_min=' + distance_trand_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_zone_distance').on('click', function(){
+        let distance_zone_min = $('#distance_zone_min').val();
+        let distance_zone_max = $('#distance_zone_max').val();
+        //if (distance_min < 0) {distance_min = 0}
+        let urls = '/set-params-zone-distance-from-polyclinic/{{current_pacient.id}}/?distance_zone_min=' + distance_zone_min + '&distance_zone_max=' + distance_zone_max + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_tonometer_hp').on('click', function(){
+    	let tonometer_min = $('#tonometer_hp_min').val();
+        let tonometer_max = $('#tonometer_hp_max').val();
+    	//if (tonometer_min < 0) {tonometer_min = 0}
+    	let urls = '/set-params-tonometer-hp-from-polyclinic/{{current_pacient.critical_value.id}}/?tonometer_hp_min=' + tonometer_min + '&tonometer_hp_max=' + tonometer_max + '&sp=1'
+    	$.ajax({
+          type: 'GET',
+          url: urls,
+          success: function (data) { 
+    		alert('Данные были сохранены !')
+    	},
+          error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_tonometer_hp').on('click', function(){
+    	let tonometer_trand_max = $('#tonometer_trand_hp_min').val();
+    	let tonometer_trand_min = $('#tonometer_trand_hp_max').val();
+    	let urls = '/set-params-trand-tonometer-hp-from-polyclinic/{{current_pacient.critical_value.id}}/?tonometer_trand_hp_min=' + tonometer_trand_max + '&tonometer_trand_hp_max=' + tonometer_trand_min + '&sp=1'
+    	$.ajax({
+          type: 'GET',
+          url: urls,
+          success: function (data) { 
+    		alert('Данные были сохранены !')
+    	},
+          error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_zone_tonometer_hp').on('click', function(){
+    	let tonometer_zone_min = $('#tonometer_zone_hp_min').val();
+        let tonometer_zone_max = $('#tonometer_zone_hp_max').val();
+    	//if (tonometer_min < 0) {tonometer_min = 0}
+    	let urls = '/set-params-zone-tonometer-hp-from-polyclinic/{{current_pacient.critical_value.id}}/?tonometer_zone_hp_min=' + tonometer_zone_min + '&tonometer_zone_hp_max=' + tonometer_zone_max + '&sp=1'
+    	$.ajax({
+          type: 'GET',
+          url: urls,
+          success: function (data) { 
+    		alert('Данные были сохранены !')
+    	},
+          error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_tonometer_lp').on('click', function(){
+    	let tonometer_min = $('#tonometer_lp_min').val();
+        let tonometer_max = $('#tonometer_lp_max').val();
+    	//if (tonometer_min < 0) {tonometer_min = 0}
+    	let urls = '/set-params-tonometer-lp-from-polyclinic/{{current_pacient.critical_value.id}}/?tonometer_lp_min=' + tonometer_min + '&tonometer_lp_max=' + tonometer_max + '&sp=1'
+    	$.ajax({
+          type: 'GET',
+          url: urls,
+          success: function (data) { 
+    		alert('Данные были сохранены !')
+    	},
+          error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_tonometer_lp').on('click', function(){
+    	let tonometer_trand_max = $('#tonometer_trand_lp_min').val();
+    	let tonometer_trand_min = $('#tonometer_trand_lp_max').val();
+    	let urls = '/set-params-trand-tonometer-lp-from-polyclinic/{{current_pacient.critical_value.id}}/?tonometer_trand_lp_min=' + tonometer_trand_max + '&tonometer_trand_lp_max=' + tonometer_trand_min + '&sp=1'
+    	$.ajax({
+          type: 'GET',
+          url: urls,
+          success: function (data) { 
+    		alert('Данные были сохранены !')
+    	},
+          error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_zone_tonometer_lp').on('click', function(){
+    	let tonometer_zone_min = $('#tonometer_zone_lp_min').val();
+        let tonometer_zone_max = $('#tonometer_zone_lp_max').val();
+    	//if (tonometer_min < 0) {tonometer_min = 0}
+    	let urls = '/set-params-zone-tonometer-lp-from-polyclinic/{{current_pacient.critical_value.id}}/?tonometer_zone_lp_min=' + tonometer_zone_min + '&tonometer_zone_lp_max=' + tonometer_zone_max + '&sp=1'
+    	$.ajax({
+          type: 'GET',
+          url: urls,
+          success: function (data) { 
+    		alert('Данные были сохранены !')
+    	},
+          error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_calories').on('click', function(){
+        let calories_min = $('#calories_min').val();
+        let calories_max = $('#calories_max').val();
+        //if (calories_min < 0) {calories_min = 0}
+        let urls = '/set-params-calories-from-polyclinic/{{current_pacient.id}}/?calories_min=' + calories_min + '&calories_max=' + calories_max + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_calories').on('click', function(){
+        let calories_trand_max = $('#calories_trand_max').val();
+        let calories_trand_min = $('#calories_trand_min').val();
+        console.log(calories_trand_max)
+        console.log(calories_trand_min)
+        let urls = '/set-params-trand-calories-from-polyclinic{{current_pacient.id}}/?calories_trand_max=' + calories_trand_max + '&calories_trand_min=' + calories_trand_min + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_zone_calories').on('click', function(){
+        let calories_zone_min = $('#calories_zone_min').val();
+        let calories_zone_max = $('#calories_zone_max').val();
+        //if (calories_min < 0) {calories_min = 0}
+        let urls = '/set-params-zone-calories-from-polyclinic/{{current_pacient.id}}/?calories_zone_min=' + calories_zone_min + '&calories_zone_max=' + calories_zone_max + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_trand_temperature').on('click', function(){
+        let temperature_trand_min = $('#temperature_trand_min').val();
+        let temperature_trand_max = $('#temperature_trand_max').val();
+        //if (calories_min < 0) {calories_min = 0}
+        let urls = '/set-params-trand-temperature-from-polyclinic/{{current_pacient.id}}/?temperature_trand_min=' + temperature_trand_min + '&temperature_trand_max=' + temperature_trand_max + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+
+    $('#parameters_temperature').on('click', function(){
+        let temperature_min = $('#temperature_min').val();
+        let temperature_max = $('#temperature_max').val();
+        //if (calories_min < 0) {calories_min = 0}
+        let urls = '/set-params-temperature-from-polyclinic/{{current_pacient.id}}/?temperature_min=' + temperature_min + '&temperature_max=' + temperature_max + '&sp=1'
+        $.ajax({
+        type: 'GET',
+        url: urls,
+        success: function (data) { 
+            alert('Данные были сохранены !')
+        },
+        error: function (jqXHR, text, error) {
+            alert(error);
+        }
+        }); return false;
+    });
+</script>
+<script>
+    var lineChart_pulse;
+    var lineChart;
+    document.addEventListener("DOMContentLoaded", () => {
+        var speedCanvas = document.getElementById("speedChart_oxygen");
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst = {
+            label: "SiO2",
+            data: {{data_BO_for_graph|safe}},
+            lineTension: 0,
+            fill: true,
+            borderColor: 'blue'
+        };
+
+        
+    
+        var speedData = {
+            labels: [{{data_time_bo_for_graph|safe}}],
+            datasets: [dataFirst]
+        };
+    
+    
+        var chartOptions = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+            boxWidth: 1,
+            fontColor: 'black'
+            }
+        }
+        };
+    
+        lineChart = new Chart(speedCanvas, {
+        type: 'line',
+        data: speedData,
+        options: chartOptions
+        });
+    
+        var speedCanvas_pulse = document.getElementById("speedChart_pulse");
+        var dataFirst_pulse = {
+            label: "Пульс",
+            data: {{data_HR_for_graph|safe}},
+            lineTension:0,
+            fill: true,
+            borderColor: 'blue',
+        };
+    
+    
+        var speedData_pulse = {
+            labels: [{{data_time_for_graph|safe}}],
+            datasets: [dataFirst_pulse]
+        };
+    
+    
+        var chartOptions_pulse = {
+        legend: {
+            display: false,
+            position: 'top',
+            labels: {
+            boxWidth: 0,
+            fontColor: 'black'
+            }
+        }
+        };
+    
+        lineChart_pulse = new Chart(speedCanvas_pulse, {
+        type: 'line',
+        data: speedData_pulse,
+        options: chartOptions_pulse
+        });
+    
+        
+        var speedCanvas_tonometer = document.getElementById("speedChart_tonometer");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_tonometer = {
+            label: "",
+            data: {{data_HP_for_graph|safe}},
+            lineTension: 0,
+            fill: true,
+            borderColor: 'blue'
+        };
+    
+        var dataSecond_tonometer = {
+            label: "",
+            data: {{data_LP_for_graph|safe}},
+            lineTension: 0,
+            fill: false,
+            borderColor: 'red',
+            pointBorderColor: 'transparent',
+        };
+    
+    
+        var speedData_tonometer = {
+            labels: [{{data_time_Tonometer_for_graph|safe}}],
+            datasets: [dataFirst_tonometer,dataSecond_tonometer] 
+        }
+    
+    
+        var chartOptions_tonometer = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+            boxWidth: 1,
+            fontColor: 'black'
+            }
+        }
+        };
+        lineChart_tonometer= new Chart(speedCanvas_tonometer, {
+        type: 'line',
+        data: speedData_tonometer,
+        options: chartOptions_tonometer
+        });
+
+        var speedCanvas_distance = document.getElementById("speedChart_distance");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_distance = {
+            label: "Кол-во шагов",
+            data: [{{data_CountStp_for_graph|safe}}],
+            lineTension: 0,
+            fill: true,
+            borderColor: 'blue'
+        };
+    
+    
+        var speedData_distance = {
+            labels: [{{data_time_Distance_for_graph|safe}}],
+            datasets: [dataFirst_distance] 
+        }
+    
+    
+        var chartOptions_distance = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+            boxWidth: 1,
+            fontColor: 'black'
+            }
+        }
+        };
+        lineChart_distance = new Chart(speedCanvas_distance, {
+        type: 'line',
+        data: speedData_distance,
+        options: chartOptions_distance
+        });
+
+
+
+
+var speedCanvas_termometer = document.getElementById("speedChart_termometer");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_termometer = {
+            label: "Температура",
+            data: {{data_TM_for_graph|safe}},
+            lineTension: 0,
+            fill: true,
+            borderColor: 'blue'
+        };
+    
+    
+        var speedData_termometer = {
+            labels: [{{data_time_Thermometer_for_graph|safe}}],
+            datasets: [dataFirst_termometer] 
+        }
+    
+    
+        var chartOptions_termometer = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+            boxWidth: 1,
+            fontColor: 'black'
+            }
+        }
+        };
+        lineChart_termometer = new Chart(speedCanvas_termometer, {
+        type: 'line',
+        data: speedData_termometer,
+        options: chartOptions_termometer
+        });
+
+        var speedCanvas_calories = document.getElementById("speedChart_calories");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_calories = {
+            label: "",
+            data: [{{data_calories_for_graph|safe}}],
+            lineTension: 0,
+            fill: true,
+            borderColor: 'blue'
+        };
+    
+        var speedData_calories = {
+            labels: [{{data_time_Calories_for_graph|safe}}],
+            datasets: [dataFirst_calories] 
+        }
+    
+    
+        var chartOptions_calories = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+            boxWidth: 1,
+            fontColor: 'black'
+            }
+        }
+        };
+        lineChart_calories = new Chart(speedCanvas_calories, {
+        type: 'line',
+        data: speedData_calories,
+        options: chartOptions_calories
+        });
+    });
+    
+    function schedule(){
+        var crit_check = document.getElementById('crit_check');
+        var zone_check = document.getElementById('zone_check');
+        var speedCanvas = document.getElementById("speedChart_oxygen");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst = {
+            label: "SiO2",
+            data: [{{data_BO_for_graph|safe}}],
+            lineTension: 0,
+            fill: true,
+            borderColor: 'blue'
+        };
+    
+        var dataSecond = {
+            label: "min",
+            data: [{% for i in data_BO_for_graph %}{{current_pacient.critical_params.bo_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'red',
+            pointBorderColor: 'transparent',
+        };
+    
+        var dataTherd = {
+            label: "min_zone",
+            data: [{% for i in data_BO_for_graph %}{{current_pacient.critical_params.bo_zone_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent',
+        };
+    
+        var dataFourth = {
+            label: "MA",
+            data: [{{data_MA_BO_for_graph|safe}}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'yellow',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataFif = {
+            label: "trand_min",
+            data: [{% for i in data_BO_for_graph %} {{current_pacient.critical_params.bo_trand_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataSixth = {
+            label: "trand_max",
+            data: [{% for i in data_BO_for_graph %} {{current_pacient.critical_params.bo_trand_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+    
+        arr_datasets_BO = [dataFirst]
+
+    
+        //Границы критических показателей
+        if(crit_check.checked){
+            arr_datasets_BO.push(dataSecond);
+        }
+    
+        //Границы развития тенденции
+        if(trand_check.checked){
+            arr_datasets_BO.push(dataFif);
+            arr_datasets_BO.push(dataSixth);
+        }
+    
+        //Границы зоны риска
+        if(zone_check.checked){
+            arr_datasets_BO.push(dataTherd);
+        }
+    
+        //Скользящая средняя
+        if(ma_check.checked){
+            arr_datasets_BO.push(dataFourth);
+        }
+    
+        var speedData = {
+        labels: [{{data_time_bo_for_graph|safe}}],
+        datasets: arr_datasets_BO,
+        };
+    
+        var chartOptions = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+            boxWidth: 1,
+            fontColor: 'black'
+            }
+        }
+        };
+    
+        lineChart.destroy();
+        lineChart = new Chart(speedCanvas, {
+        type: 'line',
+        data: speedData,
+        options: chartOptions
+        });
+    
+    
+        var speedCanvas_pulse = document.getElementById("speedChart_pulse");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_pulse = {
+            label: "Пульс",
+            data:  [{{data_HR_for_graph|safe}}],
+            lineTension:0,
+            fill: true,
+            borderColor: 'blue',
+        };
+    
+    
+        var dataSecond_pulse = {
+            label: "min",
+            data: [{% for i in data_HR_for_graph %}{{current_pacient.critical_params.pulse_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'red',
+            pointBorderColor: 'transparent',
+        };
+    
+        var dataTherd_pulse = {
+            label: "max",
+            data: [{% for i in data_HR_for_graph %} {{current_pacient.critical_params.pulse_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'red',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataFourth_pulse = {
+            label: "zone_min",
+            data: [{% for i in data_HR_for_graph %}{{current_pacient.critical_params.pulse_zone_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataFif_pulse = {
+            label: "zone_max",
+            data: [{% for i in data_HR_for_graph %} {{current_pacient.critical_params.pulse_zone_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataSixth_pulse = {
+            label: "MA",
+            data: [{{data_MA_for_graph|safe}}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'yellow',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataSeventh_pulse = {
+            label: "trand_min",
+            data: [{% for i in data_HR_for_graph %} {{current_pacient.critical_params.pulse_trand_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataEighth_pulse = {
+            label: "trand_max",
+            data: [{% for i in data_HR_for_graph %} {{current_pacient.critical_params.pulse_trand_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var speedData_pulse;
+    
+        var chartOptions_pulse = {
+        legend: {
+            display: false,
+            position: 'top',
+            labels: {
+            boxWidth: 0,
+            fontColor: 'black'
+            }
+            }
+        };
+    
+        arr_datasets = [dataFirst_pulse]
+        //Границы критических показателей
+        if(crit_check.checked){
+            arr_datasets.push(dataSecond_pulse);
+            arr_datasets.push(dataTherd_pulse);
+        }
+    
+        //Границы зоны риска
+        if(zone_check.checked){
+            arr_datasets.push(dataFourth_pulse);
+            arr_datasets.push(dataFif_pulse);
+        }
+    
+        //Границы развития тенденции
+        if(trand_check.checked){
+            arr_datasets.push(dataSeventh_pulse);
+            arr_datasets.push(dataEighth_pulse);
+        }
+    
+        //Скользящая средняя
+        if(ma_check.checked){
+            arr_datasets.push(dataSixth_pulse);
+        }
+    
+        speedData_pulse = {
+                labels: [{{data_time_for_graph|safe}}],
+                datasets: arr_datasets
+        };
+    
+        lineChart_pulse.destroy();
+        lineChart_pulse = new Chart(speedCanvas_pulse, {
+        type: 'line',
+        data: speedData_pulse,
+        options: chartOptions_pulse
+        });
+    
+        var speedCanvas_tonometer = document.getElementById("speedChart_tonometer");
+        var crit_check = document.getElementById('crit_check');
+        var zone_check = document.getElementById('zone_check');
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_tonometer = {
+        	label: "",
+        	data: [{{data_HP_for_graph|safe}}],
+        	lineTension: 0,
+        	fill: true,
+        	borderColor: 'blue'
+        };
+    
+        var dataSecond_tonometer = {
+        	label: "",
+        	data: [{{data_LP_for_graph|safe}}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataTherd_tonometer = {
+        	label: "min",
+        	data: [{% for i in data_HP_for_graph %}{{current_pacient.critical_params.HP_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataFourth_tonometer = {
+        	label: "max",
+        	data: [{% for i in data_HP_for_graph %}{{current_pacient.critical_params.HP_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataFif_tonometer = {
+        	label: "min_zone",
+        	data: [{% for i in data_HP_for_graph %}{{current_pacient.critical_params.HP_zone_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataSixth_tonometer = {
+        	label: "max_zone",
+        	data: [{% for i in data_HP_for_graph %}{{current_pacient.critical_params.HP_zone_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataSeven_tonometer = {
+        	label: "trand_min",
+        	data: [{% for i in data_HP_for_graph %} {{current_pacient.critical_params.HP_trand_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+    
+        var dataEigth_tonometer = {
+        	label: "trand_max",
+        	data: [{% for i in data_HP_for_graph %} {{current_pacient.critical_params.HP_trand_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+
+        // var dataMA_HP_tonometer = {
+        //     label: "MA_HP",
+        //     data: {{data_MA_HP_for_graph|safe}},
+        //     lineTension: 0,
+        //     fill: false,
+        //     borderColor: 'yellow',
+        //     pointBorderColor: 'transparent'
+        // };
+
+         // var dataMA_LP_tonometer = {
+        //     label: "MA_LP",
+        //     data: {{data_MA_LP_for_graph|safe}},
+        //     lineTension: 0,
+        //     fill: false,
+        //     borderColor: 'yellow',
+        //     pointBorderColor: 'transparent'
+        // };
+    
+        arr_datasets = [dataFirst_tonometer, dataSecond_tonometer]
+    
+        ///Границы критических показателей
+        if(crit_check.checked){
+        	arr_datasets.push(datadataFour_tonometer);
+        	arr_datasets.push(dataTherd_tonometer);
+        }
+    
+        //Границы развития тенденции
+        if(trand_check.checked){
+        	arr_datasets.push(dataEigth_tonometer);
+        	arr_datasets.push(dataSeven_tonometer);
+        }
+    
+        //Границы зоны риска
+        if(zone_check.checked){
+        	arr_datasets.push(dataFif_tonometer);
+        	arr_datasets.push(dataSixth_tonometer);
+        }
+        
+        //Скользящая средняя
+        // if(ma_check.checked){
+        //     arr_datasets.push(dataMA_HP_tonometer);
+        //     arr_datasets.push(dataMA_LP_tonometer);
+        // }
+    
+        var speedData_tonometer = {
+        labels: [{{data_time_Tonometer_for_graph|safe}}],
+        datasets: arr_datasets,
+        };
+    
+        var chartOptions_tonometer = {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                boxWidth: 1,
+                fontColor: 'black'
+                }
+            }
+        };
+
+        lineChart_tonometer.destroy();
+        lineChart_tonometer = new Chart(speedCanvas_tonometer, {
+            type: 'line',
+            data: speedData_tonometer,
+            options: chartOptions_tonometer
+        });
+    
+        var speedCanvas_calories = document.getElementById("speedChart_calories");
+        var crit_check = document.getElementById('crit_check');
+        var zone_check = document.getElementById('zone_check');
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_calories = {
+        	label: "Калории",
+        	data: [{{data_calories_for_graph|safe}}],
+        	lineTension: 0,
+        	fill: true,
+        	borderColor: 'blue'
+        };
+    
+        var dataSecond_calories = {
+        	label: "min",
+        	data: [{% for i in data_calories_for_graph %}{{current_pacient.critical_params.calories_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataTherd_calories = {
+        	label: "max",
+        	data: [{% for i in data_calories_for_graph %}{{current_pacient.critical_params.calories_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataFour_calories = {
+        	label: "min_zone",
+        	data: [{% for i in data_calories_for_graph %}{{current_pacient.critical_params.calories_zone_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataFif_calories = {
+        	label: "max_zone",
+        	data: [{% for i in data_calories_for_graph %}{{current_pacient.critical_params.calories_zone_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataSix_calories = {
+        	label: "trand_min",
+        	data: [{% for i in data_calories_for_graph %} {{current_pacient.critical_params.calories_trand_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+    
+        var dataSeven_calories = {
+        	label: "trand_max",
+        	data: [{% for i in data_calories_for_graph %} {{current_pacient.critical_params.calories_trand_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+
+        var MA_calories = {
+        	label: "MA",
+        	data: [{{data_MA_calories_for_graph|safe}}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+    
+        arr_datasets = [dataFirst_calories]
+    
+        //Границы критических показателей
+        if(crit_check.checked){
+        	arr_datasets.push(dataSecond_calories);
+        	arr_datasets.push(dataTherd_calories);
+        }
+    
+        //Границы развития тенденции
+        if(trand_check.checked){
+        	arr_datasets.push(dataSix_calories);
+        	arr_datasets.push(dataSeven_calories);
+        }
+    
+        //Границы зоны риска
+        if(zone_check.checked){
+        	arr_datasets.push(dataFif_calories);
+        	arr_datasets.push(dataFour_calories);
+        }
+        
+        //Скользящая средняя
+        if(ma_check.checked){
+            arr_datasets.push(MA_calories);
+        }
+        
+    
+        var speedData_calories = {
+        labels: [{{data_time_Calories_for_graph|safe}}],
+        datasets: arr_datasets,
+        };
+    
+        var chartOptions_calories = {
+        legend: {
+        	display: true,
+        	position: 'top',
+        	labels: {
+        	boxWidth: 1,
+        	fontColor: 'black'
+        	}
+        }
+        };
+        lineChart_calories.destroy();
+        lineChart_calories = new Chart(speedCanvas_calories, {
+        type: 'line',
+        data: speedData_calories,
+        options: chartOptions_calories
+        });
+    
+        var speedCanvas_distance = document.getElementById("speedChart_distance");
+        var crit_check = document.getElementById('crit_check');
+        var zone_check = document.getElementById('zone_check');
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_distance = {
+        	label: "Кол-во шагов",
+        	data: [{{data_CountStp_for_graph|safe}}],
+        	lineTension: 0,
+        	fill: true,
+        	borderColor: 'blue'
+        };
+    
+        var dataSecond_distance = {
+        	label: "min",
+        	data: [{% for i in data_CountStp_for_graph %}{{current_pacient.critical_params.CountStp_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataTherd_distance = {
+        	label: "max",
+        	data: [{% for i in data_CountStp_for_graph %}{{current_pacient.critical_params.CountStp_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataFour_distance = {
+        	label: "min_zone",
+        	data: [{% for i in data_CountStp_for_graph %}{{current_pacient.critical_params.CountStp_zone_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataFif_distance = {
+        	label: "max_zone",
+        	data: [{% for i in data_CountStp_for_graph %}{{current_pacient.critical_params.CountStp_zone_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'red',
+        	pointBorderColor: 'transparent',
+        };
+    
+        var dataSix_distance = {
+        	label: "trand_min",
+        	data: [{% for i in data_CountStp_for_graph %} {{current_pacient.critical_params.CountStp_trand_min}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+    
+        var dataSeven_distance = {
+        	label: "trand_max",
+        	data: [{% for i in data_CountStp_for_graph %} {{current_pacient.critical_params.CountStp_trand_max}},{% endfor %}],
+        	lineTension: 0,
+        	fill: false,
+        	borderColor: 'green',
+        	pointBorderColor: 'transparent'
+        };
+
+        // var dataMA_CountStp_distance = {
+        //     label: "Средне скользящая по кол-ву шагов",
+        //     data: {{data_MA_CountStp_for_graph|safe}},
+        //     lineTension: 0,
+        //     fill: false,
+        //     borderColor: 'yellow',
+        //     pointBorderColor: 'transparent'
+        // };
+
+         // var dataMA_metrs_distance = {
+        //     label: "Средне скользящая по метрам",
+        //     data: {{data_MA_metrs_for_graph|safe}},
+        //     lineTension: 0,
+        //     fill: false,
+        //     borderColor: 'yellow',
+        //     pointBorderColor: 'transparent'
+        // };
+    
+        arr_datasets = [dataFirst_distance]
+    
+        //Границы критических показателей
+        if(crit_check.checked){
+        	arr_datasets.push(dataSecond_distance);
+        	arr_datasets.push(dataTherd_distance);
+        }
+    
+        //Границы развития тенденции
+        if(trand_check.checked){
+        	arr_datasets.push(dataSix_distance);
+        	arr_datasets.push(dataSeven_distance);
+        }
+    
+        //Границы зоны риска
+        if(zone_check.checked){
+        	arr_datasets.push(dataFif_distance);
+        	arr_datasets.push(dataFour_distance);
+        }
+
+        //Скользящая средняя
+        // if(ma_check.checked){
+        //     arr_datasets.push(dataMA_CountStp_distance);
+        //     arr_datasets.push(dataMA_metrs_distance);
+        // }
+        
+    
+    
+        var speedData_distance = {
+        labels: [{{data_time_Distance_for_graph|safe}}],
+        datasets: arr_datasets,
+        };
+    
+        var chartOptions_distance = {
+        legend: {
+        	display: true,
+        	position: 'top',
+        	labels: {
+        	boxWidth: 1,
+        	fontColor: 'black'
+        	}
+        }
+        };
+        lineChart_distance.destroy();
+        lineChart_distance = new Chart(speedCanvas_distance, {
+        type: 'line',
+        data: speedData_distance,
+        options: chartOptions_distance
+        });
+
+
+        var speedCanvas_termometer = document.getElementById("speedChart_termometer");
+    
+        Chart.defaults.global.defaultFontFamily = "Lato";
+        Chart.defaults.global.defaultFontSize = 18;
+    
+        var dataFirst_termometer = {
+            label: "Температура",
+            data:  {{data_TM_for_graph|safe}},
+            lineTension:0,
+            fill: true,
+            borderColor: 'blue',
+        };
+    
+    
+        var dataSecond_termometer = {
+            label: "min",
+            data: [{% for i in data_TM_for_graph %}{{current_pacient.critical_params.pulse_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'red',
+            pointBorderColor: 'transparent',
+        };
+    
+        var dataTherd_termometer = {
+            label: "max",
+            data: [{% for i in data_TM_for_graph %} {{current_pacient.critical_params.pulse_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'red',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataFourth_termometer = {
+            label: "zone_min",
+            data: [{% for i in data_TM_for_graph %}{{current_pacient.critical_params.pulse_zone_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataFif_termometer = {
+            label: "zone_max",
+            data: [{% for i in data_TM_for_graph %} {{current_pacient.critical_params.pulse_zone_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        // var dataSixth_termometer = {
+        //     label: "MA",
+        //     data: [{{data_MA_for_graph|safe}}],
+        //     lineTension: 0,
+        //     fill: false,
+        //     borderColor: 'yellow',
+        //     pointBorderColor: 'transparent'
+        // };
+    
+        var dataSeventh_termometer = {
+            label: "trand_min",
+            data: [{% for i in data_TM_for_graph %} {{current_pacient.critical_params.pulse_trand_min}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var dataEighth_termometer = {
+            label: "trand_max",
+            data: [{% for i in data_TM_for_graph %} {{current_pacient.critical_params.pulse_trand_max}},{% endfor %}],
+            lineTension: 0,
+            fill: false,
+            borderColor: 'green',
+            pointBorderColor: 'transparent'
+        };
+    
+        var speedData_termometer;
+    
+        var chartOptions_termometer = {
+        legend: {
+            display: false,
+            position: 'top',
+            labels: {
+            boxWidth: 0,
+            fontColor: 'black'
+            }
+            }
+        };
+    
+        arr_datasets = [dataFirst_termometer]
+        //Границы критических показателей
+        if(crit_check.checked){
+            arr_datasets.push(dataSecond_termometer);
+            arr_datasets.push(dataTherd_termometer);
+        }
+    
+        //Границы зоны риска
+        if(zone_check.checked){
+            arr_datasets.push(dataFourth_termometer);
+            arr_datasets.push(dataFif_termometer);
+        }
+    
+        //Границы развития тенденции
+        if(trand_check.checked){
+            arr_datasets.push(dataSeventh_termometer);
+            arr_datasets.push(dataEighth_termometer);
+        }
+    
+        //Скользящая средняя
+        if(ma_check.checked){
+            arr_datasets.push(dataSixth_termometer);
+        }
+    
+        speedData_termometer = {
+                labels: [{{data_time_for_graph|safe}}],
+                datasets: arr_datasets
+        };
+    
+        lineChart_termometer.destroy();
+        lineChart_termometer = new Chart(speedCanvas_termometer, {
+        type: 'line',
+        data: speedData_termometer,
+        options: chartOptions_termometer
+        });
+    }
+    </script>
+<style>
+    .checkboxex{
+    display: flex;
+    flex-direction:  column;
+    border: 1.5px solid #bbbbbb;
+    border-radius: 5px;
+    height: 100%;
+    justify-content: center;
+    padding-left: 10%;
+    padding-right: 10%;
+    max-width: 350px;
+    }
+
+    #title_pressure{
+		width: 80%;
+		margin: 20px;
+		text-align: center;
+		font-size: 18px;
+	}
+	#title_pressure_content{
+		width: 100%;
+		margin: 10px;
+		text-align: center;
+		font-size: 18px;
+	}
+</style>
+{% endblock %}

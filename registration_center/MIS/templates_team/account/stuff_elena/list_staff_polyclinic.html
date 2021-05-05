@@ -1,0 +1,758 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% load chek_writer_extras %}
+{% block title %} Сотрудники поликлиники {% endblock %}
+
+{% block content %}
+<div id="maincontent" class="ui main container" style="margin-top: 30px;">
+    <div class="ui grid">
+		<div class="left floated four wide column">
+			<!-- <h2>Сотрудники</h3> -->
+		</div><br>
+		
+		<div class="ui buttons" >
+			<div class="right floated nine wide column">
+				<button 
+					onclick="document.getElementById('category-modal-id').style.display='block'"
+					class="ui right floated green button" style="margin-right: 5px;"> 
+					Добавить категорию
+				</button>
+			</div>
+
+			<div class="right floated nine wide column">
+				<button 
+					onclick="document.getElementById('doctor-modal-id').style.display='block'"
+					class="ui right floated button">
+					Добавить доктора
+				</button>
+			</div>
+		</div>
+    </div><br><br>
+	<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+		<div class="main-title">
+			<h3>Список мед персонала</h3>
+		</div>
+	</div>
+    <table class="ui small very compact unstackable selectable orange table" id='myTable_one'
+    style="text-align: center;">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th onclick="sortTable(0)">ФИО</th>
+                <th>Должность</th>
+                <th>Категория</th>
+                <th>Специальность</th>
+                <th>Номер телефона</th>
+				<th>Веб-телефон</th>
+                <th>Права</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+                <th>Специализация</th>
+                <th>Текущий участок</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if doctor %}
+            {% for count, doctors in doctor %}
+            <tr>
+                <td class="id_doctor" style="display: none;">{{ doctors.id }}</td>
+                <td>{{ count }} </td>
+				<td>
+					<a href="{% url 'schedule_doctor' doctors.id %}">{{ doctors.fio }}</a>
+				</td>
+                <td>{{ doctors.position }}</td>
+                <td>{{ doctors.category|default_if_none:"-" }}</td>
+                <td>{{ doctors.specialty }}</td>
+                <td>{{ doctors.phone }}</td>
+				<td>
+					{% if doctors.onn_or_off_web_phone %}
+                    <img src="{%  static 'img/chek.png' %}" alt="" width="30px">
+                    {% else %}
+                    <img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px !important">
+                    {% endif %}
+				</td>
+                <td>
+                    {% if doctors.read_only_license %}
+                    <img src="{%  static 'img/chek.png' %}" alt="" width="30px">
+                    {% else %}
+                    <img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px !important">
+                    {% endif %}
+                </td>
+                <td>{{ doctors.login }}</td>
+                <td>{{ doctors.password }}</td>
+                <td>
+                    {% for i in doctors.type_call.all %}
+                    {{i}}<br>
+                    {% endfor %}</td>
+                <td>
+                    {% for i in doctors.zone.all %}
+                    {{ i|truncatechars:20 }}<br>
+                    {% endfor %}
+                    <!-- <img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_zone_doctor" -->
+                    <!-- onclick="document.getElementById('modal_set_zone_a_doctor').style.display='block'"> -->
+                </td>
+    
+    
+                <td>
+                    <img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_doctor"
+                        onclick="document.getElementById('doctor_modal_edit').style.display='block'">
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="12" style="text-align: center;"> Нет данных !</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table><br><br><br>
+<div class="ui grid">
+		<div class="left floated four wide column">
+			<!-- <h2>Сотрудники</h3> -->
+		</div>
+		
+		<div class="ui buttons">
+			<div class="right floated nine wide column">
+					
+			</div>
+			<div class="right floated nine wide column">
+				<button 
+					onclick="document.getElementById('staff-add-modal-id').style.display='block'"
+					class="ui right floated button">
+					Добавить сотрудника
+				</button>
+			</div>
+		</div>
+    </div><br><br>
+	<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+		<div class="main-title">
+			<h3>Список сотрудников</h3>
+		</div>
+	</div>
+    <table class="ui small very compact unstackable selectable orange table" id='myTable_two'
+    style="text-align: center;">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th onclick="sortTable(0)">ФИО</th>
+                <th>Категория</th>
+                <th>Специальность</th>
+                <th>Номер телефона</th>
+				<th>Веб-телефон</th>
+                <th>Права</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+				<th>Дата трудоустройства</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if staffs %}
+            {% for counter, staff in staffs %}
+            <tr>
+                <td class="id_staff" style="display: none;">{{ staff.id }}</td>
+                <td>{{ counter }} </td>
+                <td>
+					<a href="{% url 'schedule_staff' staff.id %}">{{ staff.fio }}</a>
+				</td>
+                <td>{{ staff.category|default_if_none:"-" }}</td>
+                <td>{{ staff.specialty }}</td>
+                <td>{{ staff.phone }}</td>
+				<td>
+					{% if staff.onn_or_off_web_phone %}
+                    <img src="{%  static 'img/chek.png' %}" alt="" width="30px">
+                    {% else %}
+                    <img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px !important">
+                    {% endif %}
+				</td>
+                <td>
+                    {% if staff.read_only_license %}
+                    <img src="{%  static 'img/chek.png' %}" alt="" width="30px">
+                    {% else %}
+                    <img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px !important">
+                    {% endif %}
+                </td>
+                <td>{{ staff.login }}</td>
+                <td>{{ staff.password }}</td>
+				<td>{{ staff.date_of_employment }}</td>
+                <td>
+                    <img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_staff"
+                        onclick="document.getElementById('staff-edit-modal-id').style.display='block'">
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="13" style="text-align: center;"> Нет данных !</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- doctor_modal_edit -->
+<div id="doctor_modal_edit" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_doctor" action="" style="margin: 1% auto 8% auto;width:45%"
+		method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 450px;">
+			<label for="edit_login">Логин</label>
+			<input type="text" pattern="^[a-zA-Z\s]+$" onkeyup="limitInput( 'en', this );" id="edit_login" name="login"
+				class="input_add_note_doctor" required>
+			<label for="edit_password">Пароль</label>
+			<input type="text" id="edit_password" name="password" maxlength="8" class="input_add_note_doctor" required>
+			<label for="edit_fio">ФИО</label>
+			<input type="text" id="edit_fio" name="fio" class="input_add_note_doctor" required>
+			<label for="edit_specialty">Cпециальность</label>
+			<select name="specialty" id="edit_specialty" class="input_add_note_doctor" required>
+				{% for spec in specs %}
+					<option value="{{ spec.id }}" {% if doctor.specialty.id == spec.id %}selected{% endif %}>{{ spec }}</option>
+				{% endfor %}
+			</select>
+			<label for="edit_phone">Hомер телефона</label>
+			<input type="tel" pattern="^\+7\d{3}\d{7}$" id="edit_phone" name="phone" class="input_add_note_doctor">
+			<label for="scales"><input type="checkbox" id="onn_or_off_web_phone_edit_doc" name="onn_or_off_web_phone_edit_doc"> Включён веб телефон</label><br><br>
+			<div class="div_edit_address">
+				<label for="">Категор(ия/ии)</label><br>
+				<select name="category" id="category" class="input_add_note_doctor">
+					{%for i in category%}
+						<option value="{{i.id}}" {% if doctor.category.id == i.id %}selected{% endif %}>{{i}}</option>
+					{%endfor%}
+				</select>
+			</div>
+            <div class="div_edit_address {{doctor.id}}">
+				<label for="">Назначить участ(ок/ки)</label><br>
+				<div class="checkselect">
+					{% for i in zone %}
+					<label><input type="checkbox" name="zone[]" class="edit_zone" value="{{i.id}}">{{i}}</label>
+					{% endfor %}
+				</div>
+			</div>
+
+			<label for="">Обслуживаемые группы</label>
+			<!-- <div class="checkselect "> </div> -->
+			<div class="multiselect">
+				<div class="selectBox" onclick="showCheckboxes()">
+					<select>
+						<option>Выберите из списка</option>
+					</select>
+					<div class="overSelect"></div>
+				</div>
+				<div id="checkboxes_edit_group">
+				</div>
+			</div>
+
+			<label for="edit_read_only_license">Права</label>
+			<select name="edit_read_only_license" id="edit_read_only_license" class="input_add_note_doctor">
+				<option value="">-------</option>
+				<option value="True">Разрешено</option>
+				<option value="False">Запрещено</option>
+			</select>
+			<label for="edit_position">Должность</label>
+			<input type="text" id="edit_position" name="position" class="input_add_note_doctor">
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="chek_chekbox_zone"
+				type="button" onclick="document.getElementById('doctor_modal_edit').style.display='block'">
+				Редактировать</button><br>
+			<button type="button" К class="fluid ui button">Отмена</button>
+
+
+		</div>
+	</form>
+</div>
+
+<!-- Set doctors -->
+<div id="doctor-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_add_doctors" action="{% url 'add_a_doctor' polyclinic_info.id %}"
+		style="margin: 1% auto 8% auto;width:55%" method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 450px;">
+			<label for="login">Логин</label>
+			<input type="text" id="login" onkeyup="limitInput( 'en', this );" name="login"
+				class="input_add_note_doctor" required>
+			<label for="password">Пароль</label>
+			<input type="text" id="password" name="password" class="input_add_note_doctor" required>
+			<label for="fio">ФИО</label>
+			<input type="text" id="fio" name="fio" class="input_add_note_doctor" required>
+			<label for="specialty">Cпециальность</label>
+			<select name="specialty" id="read_only_license" class="input_add_note_doctor" required>
+				{% for spec in specs %}
+					<option value="{{ spec.id }}">{{ spec.name }}</option>
+				{% endfor %}
+			</select>
+			<label for="phone">Hомер телефона</label>
+			<input type="tel" id="phone" pattern="^\+7\d{3}\d{7}$" name="phone" value="+7" class="input_add_note_doctor" required>
+			<label for="scales"><input type="checkbox" id="onn_or_off_web_phone_set_doc" name="onn_or_off_web_phone_set_doc"> Включён веб телефон</label><br><br>
+			<label for="read_only_license">Права</label>
+			<select name="read_only_license" id="read_only_license" class="input_add_note_doctor" required>
+				<option value="">-------</option>
+				<option value="True">Разрешено</option>
+				<option value="False">Запрещено</option>
+			</select>
+
+			<div class="div_edit_address">
+				<label for="">Категор(ия/ии)</label><br>
+				<select name="category" id="category" class="input_add_note_doctor">
+					{% for i in category %}
+						<option value="{{i.id}}">{{ i }}</option>
+					{% endfor %}
+				</select>
+			</div>
+
+			<div class="div_edit_address">
+				<label for="">Назначить участ(ок/ки)</label><br>
+				<div class="checkselect">
+					{% for i in zone %}
+					<label><input type="checkbox" name="zone[]" class="add_zone" value="{{ i.id }}">{{i}}</label>
+					{% endfor %}
+				</div>
+			</div>
+
+			<label for="type_call">Обслуживаемые группы</label>
+			<div class="div_edit_address">
+				<div class="checkselect">
+					{% for i in type_doctor %}
+					<label for="chh_{{i.id}}"><input type="checkbox" id="chh_{{ i.id }}" name="type_call[]"
+							value="{{i.id}}" />
+						{{ i }}</label>
+					{% endfor %}
+				</div>
+			</div>
+
+			<label for="position">Должность</label>
+			<input type="text" id="position" name="position" class="input_add_note_doctor" required>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_doctors" type="submit"
+				onclick="document.getElementById('doctor-modal-id').style.display='block'">Добавить доктора
+			</button>
+			<br>
+			<button onclick="document.getElementById('doctor-modal-id').style.display='none'"class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+<!-- Set Category -->
+<div id="category-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_add_doctors" action="{% url 'create_category' polyclinic_info.id %}"
+		style="margin: 1% auto 8% auto;width:35%" method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll; height: 250px;">
+			<h2 class="heading">Обязательные поля</h2>
+			<label for="login">Навание категории</label>
+			<input type="text" id="name_category" name="name_category"class="input_add_note_doctor" required>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_doctors" type="submit"
+				onclick="document.getElementById('category-modal-id').style.display='block'">Добавить категорию
+			</button>
+			<br>
+			<button onclick="document.getElementById('category-modal-id').style.display='none'" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+<!-- Add staff -->
+<div id="staff-add-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_add_doctors" action="{% url 'add_staff' polyclinic_info.id %}"
+		style="margin: 1% auto 8% auto;width:45%" method="GET">
+		<div class="container" style="overflow-y: scroll;    height: 350px;">
+			<label for="login">Логин</label>
+			<input type="text" id="login"  onkeyup="limitInput( 'en', this );" name="login_staff"
+				class="input_add_note_doctor" required>
+
+			<label for="add_password">Пароль</label>
+			<input type="text" id="password" name="add_password" class="input_add_note_doctor" required>
+			<label for="add_fio">Фамилия</label>
+			<input type="text" id="add_fio" name="name_staff" class="input_add_note_doctor" required>
+			<label for="add_fio">Имя</label>
+			<input type="text" id="add_fio" name="surname_staff" class="input_add_note_doctor" required>
+			<label for="add_fio">Отчество</label>
+			<input type="text" id="add_fio" name="patronymic_staff" class="input_add_note_doctor" required>
+			<label for="add_address">Адрес проживания</label>
+			<input type="text" id="add_address" name="address_staff" class="input_add_note_doctor" required>
+			<label for="add_specialty">Cпециальность</label>
+			<input type="text" id="add_specialty" name="specialty_staff" class="input_add_note_doctor" required>
+			<label for="add_phone">Hомер телефона</label>
+			<input type="tel" pattern="^\+7\d{3}\d{7}$" id="add_phone" name="phone_staff" class="input_add_note_doctor">
+			<input type="checkbox" id="onn_or_off_web_phone_staff" name="onn_or_off_web_phone_staff">
+			<label for="scales">Включён веб телефон</label><br><br>
+			<label for="date_of_birth">Дата рождения</label>
+			<input type="date" class="input_add_note_doctor" name="date_of_birth_staff">
+			<label for="date_of_birth">Дата трудоустройства</label>
+			<input type="date" class="input_add_note_doctor" name="date_of_employment_staff">
+			<div class="div_add_staff">
+				<label for="">Категор(ия/ии)</label><br>
+				<select name="category_staff" id="category_staff" class="input_add_note_doctor">
+					{%for i in category%}
+						<option value="{{i.id}}" {% if doctor.category.id == i.id %}selected{% endif %}>{{i}}</option>
+					{%endfor%}
+				</select>
+			</div>
+			
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_staff" type="submit"
+				onclick="document.getElementById('staff-add-modal-id').style.display='block'">Добавить сотрудника
+			</button>
+			<br>
+			<button onclick="document.getElementById('staff-add-modal-id').style.display='none'" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+
+<!-- Edit staff -->
+<div id="staff-edit-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_staff" action=""
+		style="margin: 1% auto 8% auto;width:45%" method="GET">
+		<div class="container" style="overflow-y: scroll;    height: 350px;">
+			<label for="edit_login_staff">Логин</label>
+			<input type="text" id="edit_login_staff" pattern="^[a-zA-Z\s]+$" onkeyup="limitInput( 'en', this );" name="login_staff"
+				class="input_add_note_doctor" required>
+			<label for="add_fio">Фамилия</label>
+			<input type="text" id="edit_surname" name="name_staff" class="input_add_note_doctor" required>
+			<label for="add_fio">Имя</label>
+			<input type="text" id="edit_name" name="surname_staff" class="input_add_note_doctor" required>
+			<label for="add_fio">Отчество</label>
+			<input type="text" id="edit_patronymic" name="patronymic_staff" class="input_add_note_doctor" required>
+			<label for="edit_address_staff">Адрес проживания</label>
+			<input type="text" id="edit_address_staff" name="edit_address" class="input_add_note_doctor" required>
+			<label for="edit_address">Пароль</label>
+			<input type="text" id="edit_staff_password" name="edit_staff_password" class="input_add_note_doctor" required>
+			<label for="add_specialty_staff">Cпециальность</label>
+			<input type="text" id="add_specialty_staff" name="specialty_staff" class="input_add_note_doctor" required>
+			<label for="add_phone">Hомер телефона</label>
+			<input type="tel" pattern="^\+7\d{3}\d{7}$" id="edit_phone_staff" name="phone_staff" class="input_add_note_doctor">
+			<label for="scales"><input type="checkbox" id="onn_or_off_web_phone_edit_staff" name="onn_or_off_web_phone_edit_staff"> Включён веб телефон</label><br><br>
+			<label for="date_of_birth">Дата рождения</label>
+			<input type="date" class="input_add_note_doctor" id="date_of_birth_staff" name="date_of_birth_staff">
+			<label for="date_of_birth">Дата трудоустройства</label>
+			<input type="date" class="input_add_note_doctor" id='date_of_employment_staff' name="date_of_employment_staff">
+			<label for="date_of_birth">Дата увольнения</label>
+			<input type="date" class="input_add_note_doctor" id='date_of_dismissal_staff' name="date_of_dismissal_staff">
+			<div class="div_add_staff">
+				<label for="">Категор(ия/ии)</label><br>
+				<select name="category_staff" id="category_staff" class="input_add_note_doctor" required>
+					{%for i in category%}
+						<option value="{{i.id}}" {% if doctor.category.id == i.id %}selected{% endif %}>{{i}}</option>
+					{%endfor%}
+				</select>
+			</div>
+			<input type="checkbox" id="present" name="present">
+			<label for="scales">Присутствует на работе</label>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_staff" type="submit"
+				onclick="document.getElementById('staff-edit-modal-id').style.display='block'">Редактировать
+			</button>
+			<br>
+			<button onclick="document.getElementById('staff-edit-modal-id').style.display='none'" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/tabs.js' %}"></script>
+<script src="{% static 'js/detaile_list.js' %}"></script>
+<script src="{% static 'js/list_staff_polyclinic.js' %}"></script>
+<script>
+	
+    function get_info_a_doctor(id_doctor) {
+		$.ajax({
+			url: "/get_a_doctor_info/" + id_doctor + "/",
+			dataType: 'json',
+			success: function (response) {
+				var data_mess = '';
+				var data = '';
+				for (i in response) {
+					list = {
+						'id': response[i].id,
+						'fio': response[i].fio,
+						'position': response[i].position,
+						'specialty': response[i].specialty,
+						'specialty_id': response[i].specialty_id,
+						'phone': response[i].phone,
+						'onn_or_off_web_phone': response[i].onn_or_off_web_phone,
+						'type_call': response[i].type_call,
+						'read_only_license': response[i].read_only_license,
+						'option_data': response[i].option_data,
+                        'login': response[i].login,
+						'password': response[i].password,
+                        'list_checked_zone': response[i].list_checked_zone,
+						'category_id': response[i].category_id,
+						'category': response[i].category
+					}
+				}
+				console.log(list.specialty_id)
+				let url = '/edit-doctor/' + list.id + '/{{polyclinic_info.id}}/';
+				$('.modal_edit_doctor').attr('action', url);
+				$('#edit_specialty').val(list.specialty_id);
+				$('#edit_phone').val(list.phone);
+				if (list.onn_or_off_web_phone) {
+					$('#onn_or_off_web_phone_edit_doc').prop('checked', true);
+				}
+				else{$('#onn_or_off_web_phone_edit_doc').prop('checked', false);}
+				$('#edit_read_only_license').val(list.read_only_license);
+				$('#edit_position').val(list.position);
+				$('#edit_fio').val(list.fio)
+				$('#edit_login').val(list.login)
+				$('#edit_password').val(list.password)
+				$('#get_id_a_doctor').val(list.id);
+				$('#category').val(list.category_id);
+
+				console.log(list.onn_or_off_web_phone);
+
+				let inputs = $('.edit_zone');
+				console.log(inputs.length);
+				for (let i = 0; i < inputs.length; i++) {
+					for (let j = 0; j < list.list_checked_zone.length; j++) {
+						if (list.list_checked_zone[j] == inputs[i].value) {
+							inputs[i].checked = true;
+							console.log(inputs[i])
+						}
+					}
+				}
+				document.getElementById('checkboxes_edit_group').innerHTML = list.option_data;
+			}
+		});
+	}
+	
+    (function ($) {
+        function setChecked(target) {
+            var checked = $(target).find("input[type='checkbox']:checked").length;
+
+            if (checked) {
+                if (checked > 0) {
+                    $('.set_address').removeAttr('disabled')
+                }
+                else {
+                    $('.set_address').setAttribute('disabled')
+                }
+                $(target).find('select option:first').html('Выбрано: ' + checked);
+
+            } else {
+				$(target).find('select option:first').html('Выберите из списка');
+				//$('.set_address').setAttribute('disabled')
+			}
+			
+        }
+
+        $.fn.checkselect = function () {
+            this.wrapInner('<div class="checkselect-popup"></div>');
+            this.prepend(
+                '<div class="checkselect-control">' +
+                '<select class="form-control"><option></option></select>' +
+                '<div class="checkselect-over"></div>' +
+                '</div>'
+            );
+
+            this.each(function () {
+                setChecked(this);
+            });
+            this.find('input[type="checkbox"]').click(function () {
+                setChecked($(this).parents('.checkselect'));
+            });
+
+            this.parent().find('.checkselect-control').on('click', function () {
+                $popup = $(this).next();
+                $('.checkselect-popup').not($popup).css('display', 'none');
+                if ($popup.is(':hidden')) {
+                    $popup.css('display', 'block');
+                    $(this).find('select').focus();
+                } else {
+                    $popup.css('display', 'none');
+                }
+            });
+
+            $('html, body').on('click', function (e) {
+                if ($(e.target).closest('.checkselect').length == 0) {
+                    $('.checkselect-popup').css('display', 'none');
+                }
+            });
+        };
+    })(jQuery);
+
+	$('.checkselect').checkselect();
+
+	var expanded = false;
+
+	function showCheckboxes() {
+		var checkboxes = document.getElementById("checkboxes_edit_group");
+		if (!expanded) {
+			checkboxes.style.display = "block";
+			expanded = true;
+		} else {
+			checkboxes.style.display = "none";
+			expanded = false;
+		}
+	}
+
+ function get_a_staff_info(id_staff) {
+		var list = {}
+
+		$.ajax({
+			url: "/get_a_staff_info/" + id_staff + "/",
+			dataType: 'json',
+			success: function (response) {
+				var data_mess = '';
+				var data = ''
+				for (i in response) {
+					list = {
+						'id' : response[i].id,
+						'name' : response[i].name,
+						'surname' : response[i].surname,
+						'patronymic' : response[i].patronymic,
+						'date_of_birth' : response[i].date_of_birth,
+						'address' : response[i].address,
+						'polyclinic' : response[i].polyclinic,
+						'date_of_employment' : response[i].date_of_employment,
+						'date_of_dismissal' : response[i].date_of_dismissal,
+						'present' : response[i].present,
+						'specialty' : response[i].specialty,
+						'phone' : response[i].phone,
+						'onn_or_off_web_phone_staff': response[i].onn_or_off_web_phone,
+						'login' : response[i].login,
+						'password' : response[i].password,
+						'category' : response[i].category,
+					}
+				}
+				console.log(list)
+				let url = '/edit_staff/' + list.id + '/{{polyclinic_info.id}}/';
+
+				$('.modal_edit_staff').attr('action', url);
+				$('#edit_login_staff').val(list.login);
+				$('#edit_staff_password').val(list.password);
+				$('#edit_address_staff').val(list.address);
+				if (list.onn_or_off_web_phone_staff) {
+					$('#onn_or_off_web_phone_edit_staff').prop('checked', true);
+				}
+				else{$('#onn_or_off_web_phone_edit_staff').prop('checked', false);}
+				$('#edit_surname').val(list.surname);
+				$('#edit_name').val(list.name);
+				$('#edit_patronymic').val(list.patronymic);
+				$('#add_specialty_staff').val(list.specialty);
+				$('#edit_phone_staff').val(list.phone);
+				$('#date_of_birth_staff').val(list.date_of_birth);
+				$('#date_of_employment_staff').val(list.date_of_employment);
+				$('#date_of_dismissal_staff').val(list.date_of_dismissal);
+				$('#category_staff').val(list.category);
+
+
+
+
+
+				document.getElementById('checkboxes_edit_group').innerHTML = list.option_data;
+			}
+		});
+	}
+
+	$(function () {
+		$('#clear_inputs').on('click', function () {
+			let inputs = $('.edit_zone');
+			for (let i = 0; i < inputs.length; i++) {
+				inputs[i].checked = false;
+				console.log(inputs[i])
+			}
+		});
+	})
+
+	function get_info_zone(list, class_form, id_doctor) {
+		let form = $(class_form)[0]
+		if (list.length == 0) {
+			form.submit()
+		}
+
+		if (id_doctor) {
+			urls = "/get_state_zone/{{ polyclinic_info.id }}/" + id_doctor + "/";
+		}
+		else {
+			urls = "/get_state_zone/{{ polyclinic_info.id }}/";
+		}
+		let dataString = '';
+		let complite_mess = ''
+		for (i in list) {
+			dataString += '&zones_id[]=' + list[i];
+		}
+		$.ajax({
+			type: "GET", // метод
+			url: urls,
+			data: dataString,
+			cache: false,
+			dataType: 'json',
+			success: function (response) {
+				var data_mess = '';
+				var val = []
+				console.log('==========')
+				console.log(response)
+				let lists = []
+				for (i in response) {
+					lists[i] = [{ 'zone': response[i].zone, 'name_doctor': response[i].name_doctor, 'type': response[i].type }]
+				}
+				console.log(lists)
+				for (i in lists) {
+					console.log(lists[i])
+					for (t of lists[i]) {
+						complite_mess += t.zone + ':' + t.name_doctor + ' , ';
+					}
+				}
+				console.log(complite_mess)
+				console.log('==========')
+				let complite_messss = 'Участок(и)  ' + complite_mess + ' совпадают по типу специальности и уже заняты если вы продолжите они будут удалены от прикреплённого врача !';
+				if (lists.length != 0) {
+					let res = confirm(complite_messss)
+					if (res) {
+						form.submit()
+					}
+				} else {
+					form.submit()
+				}
+			}
+		});
+
+	}
+
+	$(function () {
+		$('#chek_chekbox_zone').on('click', function (event) {
+			event.preventDefault();
+			let str = $('.edit_zone');
+			list = []
+			for (let i = 0; i < str.length; i++) {
+				if (str[i].checked) {
+					let id = str[i].value;
+					list.push(id)
+				}
+			}
+			class_form = '.modal_edit_doctor'
+			let res = get_info_zone(list, class_form);
+		});
+	})
+
+	// 
+	/*$(function () {
+		$('#add_doctors').on('click', function () {
+			let str = $('.add_zone');
+			list = []
+			for (let i = 0; i < str.length; i++) {
+				if (str[i].checked) {
+					let id = str[i].value;
+					list.push(id)
+				}
+			}
+			class_form = '.modal_add_doctors'
+			let res = get_info_zone(list, class_form);
+		});
+	})*/
+</script>
+{% endblock %}

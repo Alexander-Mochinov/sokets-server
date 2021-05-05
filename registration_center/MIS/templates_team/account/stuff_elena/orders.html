@@ -1,0 +1,522 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% load chek_writer_extras %}
+{% block title %} Сотрудники поликлиники {% endblock %}
+
+{% block content %}
+<div id="maincontent" class="ui main container" style="margin-top: 30px;">
+    <div class="ui grid">
+		<div class="left floated seven wide column" >
+            <div class="filter_datetime" >
+				<form method="GET" action="" name="filter">
+					<label for="">Дата: </label><br>
+					<label for=""> <b>C</b></label>
+					<input type="date" name="date_to" value="{% if date_now %}{{date_now}}{% else %}{{datetime}}{% endif %}">
+					<label for=""> <b>По</b> </label>
+					<input type="date" name="date"  value="{% if date %}{{date}}{% else %}{{datetime}}{% endif %}"><br><br>
+					<label for="">Время:</label><br>
+					<label for=""> <b>C</b></label>
+					<input type="time" name='time_from' value="{% if time_from %}{{ time_from }}{% endif %}">
+					<label for=""> <b>По</b> </label>
+					<input type="time" name='time_to' value="{% if time_to %}{{ time_to }}{% endif %}"><br><br>
+					<button type="submit" class="ui button">
+						Поиск
+					</button>
+				</form>
+			</div>
+		</div><br> 
+		
+		<div class="ui buttons" >
+			<div class="right floated nine wide column" style="display:flex; align-items: flex-end;">
+				<button 
+                    onclick="open_order()"
+					class="ui right floated green button" style="margin-right: 5px; margin-bottom: 1rem;"> 
+					Добавить заказ
+				</button>
+			</div>
+		</div>
+    </div><br><br>
+	<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+		<div class="main-title">
+			<h3>Список заказов</h3>
+		</div>
+	</div>
+    <table class="ui small very compact unstackable selectable orange table" id='myTable_one'
+    style="text-align: center;">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>ФИО</th>
+                <th>Дата и время заказа</th>
+                <th>номер телефона</th>
+                <th>e-mail</th>
+                <th>Статус заказа</th>
+                <th>Адрес</th>
+                <th>Оплачен</th>
+                <th>Отправлен</th>
+                <th>Изменить</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if orders %}
+            {% for count, order in orders %}
+            <tr>
+                <td>{{ count }} </td>
+                <td>{{order.name}} {{order.surname}} {{order.patronymic}}</td>
+                <td>{{order.created}}</td>
+
+                <td>
+                    <div onclick="send_phone('{{order.phone_number}}')" style="cursor: pointer; width: 100%; height: 100%; display: flex; justify-content: space-evenly;">
+                        <img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a style="margin-top: auto; margin-bottom: auto;">{{order.phone_number}}</a> 
+                    </div>
+                </td>
+                
+                <td>{{order.email}}</td>
+                <td>{{order.status}}</td>
+                <td>{{order.get_address_person}}</td>
+                <td style="text-align: center;">
+                    {% if order.paid %}
+                    <img src="{% static 'img/check.svg' %}" alt="" style="width: 33% !important">
+                    {% else %}
+                    <a href="{% url 'accept_paid_order' order.id %}">
+                        <img src="{% static 'img/ban.svg' %}" alt="" style="width: 33% !important">
+                    </a>
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">
+                    {% if order.сonfirmed %}
+                    <img src="{% static 'img/check.svg' %}" alt="" style="width: 33% !important">
+                    {% else %}
+                    <a href="{% url 'accept_order' order.id %}">
+                        <img src="{% static 'img/ban.svg' %}" alt="" style="width: 33% !important">
+                    </a>
+                    {% endif %}
+                </td>
+                <td><img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" onclick="get_order_fields({{order.id}})"></td>
+            </tr>
+            {% endfor %}    
+            {% else %}
+            <tr>
+                <td colspan="12">Нет данных</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table><br><br><br>
+</div>
+<style>
+.modal-content{
+    max-width: none;
+}
+</style>
+<!-- MODAL -->
+<div id="order_modal" class="modal" style="padding-top: 0 !important;">
+    <div class="modal-content" style="margin-top: 0.5%;    width: 780px !important; padding: 20px;">	
+        <form action="{% url 'create_order_request' %}" method="POST">
+            {% csrf_token %}
+            <div class="ui form" >
+                <div class="block_scroll"style=" overflow-y: scroll;height: 450px;">
+                <span class="close" onclick="document.getElementById('order_modal').style.display='none'">&times;</span>
+                <h3 style="margin: 0;">Оформление заказа</h3>
+                <div class="fields">
+                    <div class="field">
+                        <label>Фамилия</label>
+                        <input type="text" name="surname" value="" required>
+                    </div>
+                    <div class="field">
+                        <label>Имя</label>
+                        <input type="text" name="name" value="" required>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Отчество</label>
+                        <input type="text" name="patronymic" value="" required>
+                    </div>
+                </div>
+                <h3>Адрес доставки</h3>
+                <div class="fields">
+                    <div class="field">
+                        <label>Город</label>
+                        <input type="text" name="town" value="" required>
+                    </div>
+                    <div class="field">
+                        <label>Регион</label>
+                        <input type="text" name="region" value="" required>
+                    </div>
+                    <div class="field">
+                        <label>Почтовый индекс</label>
+                        <input type="text" name="postal_code" value="" maxlength="6" required>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="field">
+                    <label>Улица</label>
+                        <input type="text" name="street" value="" required>
+                    </div>
+                    <div class="field">
+                    <label>Дом</label>
+                        <input type="text" name="building" value="" required>
+                    </div>
+                    <div class="field">
+                    <label>Квартира</label>
+                        <input type="text" name="flat" value="" required>
+                    </div>
+                </div>
+                <h3>Контактные данные</h3>
+                <div class="fields">
+                
+                    <div class="field">
+                    <label>Номер телефона</label>
+                        <input type="tel" name="phone_number" value="+7" required>
+                    </div>
+                    <div class="field">
+                    <label>Почта</label>
+                        <input type="email" name="email" value="" required>
+                    </div>
+                </div>
+                <div class="check" style="text-align: left; margin: 25px;">
+                    <h2 id="order_cost"></h2>
+                    <div class="">
+                        <div class="field">	
+                            <select class="ui dropdown" id="color" name='device_id' required>
+                                <option value="">Тиа браслета</option>
+                                {% for device in devices %}
+                                    <option value="{{device.id}}"> {{device.name}} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <select class="ui dropdown" id='type_order' name='type_order' onchange="change_cost()">
+                                <option value="">Тип заказа</option>
+                                <option value="Предзаказ"> Предзаказ </option>
+                                <option value="Быстрый заказ"> Быстрый заказ </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                </div><br><hr><br>
+                <button class="pay_button" type="submit"> Заказать </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id='toast' class="toast" style="display: none;">
+	<div class="position_toast">
+		<div class="toast-header">
+			<span class="close" style="font-size: x-large;" onclick="MobileCO('toast');">&times;</span>
+		</div>
+		<hr>
+		<div class="toast-body">
+		  Звонок был отклонён
+		</div>
+	</div>
+</div>
+<!-- Edit order -->
+
+
+<!-- MODAL -->
+<div id="edit_order_modal" class="modal" style="padding-top: 0 !important;">
+    <div class="modal-content" style="margin-top: 0.5%;    width: 780px !important; padding: 20px;">	
+        <form id="edit_order" action="" method="POST">
+            {% csrf_token %}
+            <div class="ui form" >
+                <div class="block_scroll"style=" overflow-y: scroll;height: 450px;">
+                <span class="close" onclick="document.getElementById('edit_order_modal').style.display='none'">&times;</span>
+                <h3 style="margin: 0;">Оформление заказа</h3>
+                <div class="fields">
+                    <div class="field">
+                        <label>Фамилия</label>
+                        <input type="text" name="edit_surname" id="edit_surname" value="" required>
+                    </div>
+                    <div class="field">
+                        <label>Имя</label>
+                        <input type="text" name="edit_name" id="edit_name" value="" required>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Отчество</label>
+                        <input type="text" name="edit_patronymic" id="edit_patronymic" value="" required>
+                    </div>
+                </div>
+                <h3>Адрес доставки</h3>
+                <div class="fields">
+                    <div class="field">
+                        <label>Город</label>
+                        <input type="text" name="edit_town" id="edit_town" value="" required>
+                    </div>
+                    <div class="field">
+                        <label>Регион</label>
+                        <input type="text" name="edit_region" id="edit_region" value="" required>
+                    </div>
+                    <div class="field">
+                        <label>Почтовый индекс</label>
+                        <input type="text" name="edit_postal_code" id="edit_postal_code" value="" maxlength="6" required>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="field">
+                    <label>Улица</label>
+                        <input type="text" name="edit_street" id="edit_street" value="" required>
+                    </div>
+                    <div class="field">
+                    <label>Дом</label>
+                        <input type="text" name="edit_building" id="edit_building" value="" required>
+                    </div>
+                    <div class="field">
+                    <label>Квартира</label>
+                        <input type="text" name="edit_flat" id="edit_flat" value="" required>
+                    </div>
+                </div>
+                <h3>Контактные данные</h3>
+                <div class="fields">
+                
+                    <div class="field">
+                    <label>Номер телефона</label>
+                        <input type="tel" name="edit_phone_number" id="edit_phone_number" value="+7" required>
+                    </div>
+                    <div class="field">
+                    <label>Почта</label>
+                        <input type="email" name="edit_email" id="edit_email" value="" required>
+                    </div>
+                </div>
+                <!-- <div class="check" style="text-align: left; margin: 25px;">
+                    <div class="">
+                        <div class="field">	
+                            <select class="ui dropdown" id="color" name='device_id' required>
+                                <option value="">Тиа браслета</option>
+                                {% for device in devices %}
+                                    <option value="{{device.id}}"> {{device.name}} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <select class="ui dropdown" id='type_order' name='type_order' onchange="change_cost()">
+                                <option value="">Тип заказа</option>
+                                <option value="Предзаказ"> Предзаказ </option>
+                                <option value="Быстрый заказ"> Быстрый заказ </option>
+                            </select>
+                        </div>
+                    </div>
+                </div> -->
+                </div><br><hr><br>
+                <button class="pay_button" type="submit"> Обновить запись </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    var win;
+	function send_phone(number){
+		$("#num_win").val(number)
+		call()
+	}
+
+	function call(){
+		var count = 0
+		var not_error = false
+		
+		let date_start = new Date();
+		win = window.open("{% url 'index_web_phone' %}", "", "width=655, height=350, top=100, left=100");
+		localStorage.setItem('fast_call', true)
+		if(localStorage.getItem('fast_call')){
+			var refresh = setInterval(function(){
+				count++
+				if(win.closed && not_error){
+					localStorage.removeItem('fast_call')
+					clearInterval(refresh)
+				}
+				if(count > 2){
+					count = 0
+					for(let i=localStorage.length; i>0; i--) {
+						let key = localStorage.key(i);
+						if(String(key).includes('stream')){
+							var dt = JSON.parse(localStorage.getItem(String(key)))
+							//NOrmal
+							if(dt.DataCollection[dt.TotalRows - 1].ReasonText.includes('Normal')){
+								not_error = true
+
+                                // LOGIC IF GOOD CALL
+							}
+							//	
+							else{
+								MobileCO('toast')
+                                $("#chat-circle").show()
+							}
+						}
+						// Error
+						else{
+							clearInterval(refresh)
+							MobileCO('toast')
+							win.close()
+                            $("#chat-circle").show()
+            			}
+					}
+				}
+			}, 1000);
+		}
+        $("#chat-circle").hide()
+	}
+
+	function MobileCO(name) {
+		if($('#' + name).css('display') === 'flex'){
+			$('#' + name).css('animation-name', 'moveright')
+			setTimeout(() => {  $('#' + name).css('display', 'none') }, 990);
+			
+		}
+		else if($('#' + name).css('display') === 'none'){
+			$('#' + name).css('animation-name', 'moveleft')
+			setTimeout(() => {  $('#' + name).css('display', 'flex') }, 100);
+		}
+	}
+</script>
+
+<script>
+
+$('th').click(function(){
+    var table = $(this).parents('table').eq(0)
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+    this.asc = !this.asc
+    if (!this.asc){rows = rows.reverse()}
+    for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+})
+
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index)
+        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+    }
+}
+
+function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+
+</script>
+<script>
+    function open_order(){
+		$('#order_modal').show()
+	}
+function change_cost(){
+    type_order = $('#type_order').val();
+    if (type_order == 'Быстрый заказ'){
+      $('#order_cost').text('Чек на сумму: 2220 ₽')
+    }
+    else if (type_order == 'Предзаказ'){
+      $('#order_cost').text('Чек на сумму: 1980 ₽')
+    }
+  }
+    function get_order_fields(id){
+    document.getElementById('edit_order_modal').style.display='block';
+    let url = '/get_order_fields/' + String(id) + '/';
+    let edit_url = '/edit_order_field/' + String(id) + '/';
+    $.ajax({
+      url: url,
+      dataType: 'json',
+      success: function (response) {
+        console.log(response);
+
+
+
+        $('#edit_order').attr('action', edit_url);
+
+        $('#edit_surname').val(response.surname);
+        $('#edit_name').val(response.name);
+        $('#edit_patronymic').val(response.patronymic);
+        $('#edit_town').val(response.town);
+        $('#edit_region').val(response.region)
+        $('#edit_postal_code').val(response.postal_code)
+        $('#edit_street').val(response.street)
+        $('#edit_building').val(response.building);
+        $('#edit_flat').val(response.flat)
+        $('#edit_phone_number').val(response.phone_number);
+        $('#edit_email').val(response.email);
+      }
+    });
+    }
+</script>
+
+<style>
+.toast-header{
+		height: 20px;
+		width: 100%;
+		margin: 5px 0;
+	}
+	.toast-body{
+		height: 55px;
+		width: 100%;
+		display: flex;
+        align-items: center;
+		font-weight: 700;
+		font-size: medium;
+		padding: 5px;
+	}
+	.position_toast{
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+	}
+	.toast{
+		position: fixed;
+		right: 20px;
+		bottom: 100px;
+		height: 100px;
+		width: 250px;
+		border: 1px solid rgba(163, 163, 163, 0.596);
+		border-radius: 10px;
+		padding: 5px;
+		box-shadow: 2px 18px 21px 3px rgba(34, 60, 80, 0.28);
+		animation-duration: 1s;
+		animation-name: moveright;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes moveleft {
+		from {
+			transform: translateX(100%)
+		}
+
+		to {
+			transform: translateX(0%)
+		}
+	}
+
+	@keyframes moveright {
+		from {
+			transform: translateX(0%)
+		}
+
+		to {
+			transform: translateX(120%)
+		}
+	}
+
+.pay_button{
+	border: none;
+	width: 50% !important;
+	border-radius: 13px;
+	padding: 20px;
+	color: white;
+	font-size: 20px;
+	width: -webkit-fill-available;
+	background: none;
+	border: none;
+	background-color: rgb(43 149 255);
+	margin-bottom: 10px;
+}
+
+.ui.form .fields>.field {
+    padding-left: 0em !important;
+}
+
+@media screen and (min-width: 921px){
+    #order_modal{
+        overflow-y: hidden;
+    }
+}
+@media screen and (max-width: 920px){
+    #order_modal{
+        overflow-y: scroll;
+    }
+}
+</style>
+{% endblock %}

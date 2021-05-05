@@ -1,0 +1,64 @@
+{% extends '../base_account.html' %}
+{% load static %}
+
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="main-title">
+				Полис ОМС
+			</div>
+			<div class="ui grid">
+
+				<div class="left floated six wide column ui equal width form" style="    text-align: left;">
+					<form method="GET" action="{% url 'send_request_for_attach' id_polyclinic %}">
+					<div class="fields">
+						<div class="field">
+							<input type="text" maxlength="16" name="OMS" value="{% if oms %}{{oms}}{% endif %}">
+						</div>
+						<button class="ui button" type="submit">
+							Найти
+						</button>
+					</div>
+					</form>
+
+				</div>
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Список пациентов</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Действие </th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if pacient %}
+						<tr>
+							<td>{{pacient.name}} {{pacient.surname}} {{pacient.patronymic}}</td>
+							<td>{{pacient.phone_number}}</td>
+							<td>{% if not exists %} <a href="{% url 'send_request_pacient' id_polyclinic pacient.id %}">Привязать</a> {% else %} Пациент уже наблюдается{% endif %}</td>
+						</tr>
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+
+{% endblock %}

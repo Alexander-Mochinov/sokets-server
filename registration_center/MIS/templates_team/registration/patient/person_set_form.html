@@ -1,0 +1,228 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block script %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
+{% endblock %}
+{% block title %} Регистрация нового пользователя {% endblock %}
+
+
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+    <div class="main-title" style="text-align:right;">
+        {% if messages %}
+        {% for message in messages %}
+        <h4>{{ message }}</h4>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <form action="." method="post" enctype="Multipart/form-data" style="display: flex;">
+        {% csrf_token %}
+        <div class="form-left">
+            <div class="form-group">
+                <h2 class="heading">Обязательные поля: </h2>
+                        
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.surname.errors}}</div><br>
+                <div class="controls">
+                {{form.surname}}
+                <label for="fio" class="active">Фамилия:</label><br>
+                </div>
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.name.errors}}</div><br>
+                <div class="controls">
+                {{form.name}}
+                <label for="fio" class="active">Имя:</label><br>
+                </div>
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.patronymic.errors}}</div><br>
+                <div class="controls">
+                {{form.patronymic}}
+                <label for="fio" class="active">Отчество:</label><br>
+                </div><br>
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.date_of_birth.errors}}</div>
+                <br>
+                <div class="controls">
+                    {{form.date_of_birth}}
+                    <label for="date_of_birth" class="active">Дата рождения:</label><br>
+                </div>
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.address.errors}}</div><br>
+
+                <div class="controls">
+                    {{form.address}} <br>
+                    <label for="entrance" class="active">Адрес проживания:<span style="color: red;">*</span></label>
+                </div>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.flat.errors}}</div><br>
+                <div class="controls">
+                    {{form.flat}}
+                    <label for="entrance" class="active">Квартира №:<span style="color: red;">*</span></label>
+                </div>
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.entrance.errors}}</div><br>
+                <div class="controls">
+                    {{form.entrance}}
+                    <label for="entrance" class="active">Подъезд №:</label><br>
+                </div>
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.floor.errors}}</div><br>
+                <div class="controls">
+                    {{form.floor}}
+                    <label for="floor" class="active">Этаж дома:</label><br>
+                </div>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.intercom_code.errors}}</div>
+                <br>
+                <div class="controls">
+                    {{form.intercom_code}}
+                    <label for="intercom_code" class="active">Код домофона:</label><br>
+                </div>
+            </div>
+            <div class="form-group">
+                <h2 class="heading" class="active">Контактные данные:</h2>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.phone.errors}}</div><br>
+                <div class="controls">
+                    {{form.phone}}
+                    <label for="phone" class="active">Телефон: </label><br>
+                </div>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.SNILS.errors}}<br></div><br>
+                <div class="controls">
+
+                    {{form.SNILS}}
+                    <label for="SNILS" class="active">СНИЛС: </label><br>
+                </div>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.C_M_O_policy.errors}}</div>
+                <br>
+                <div class="controls">
+                    {{form.C_M_O_policy}}
+                    <label for="C_M_O_policy" class="active">Полис ОМС: </label><br>
+                </div>
+            </div>
+            <div class="form-group">
+
+                <h2 class="heading" class="active">Причины:</h2>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.temperature.errors}}</div>
+                <br>
+                <div class="controls">
+                    {{form.temperature}}
+                    <label for="comments" class="active">Темпереатура:<span style="color: red;">*</span></label><br>
+                </div>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.cough.errors}}</div><br>
+                <div class="controls">
+                    {{form.cough}}
+                    <label for="comments" class="active">Кашель:<span style="color: red;">*</span></label><br>
+                </div>
+
+                <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.smell.errors}}</div><br>
+                <div class="controls">
+                    {{form.smell}}
+                    <label for="comments" class="active">Обоняние:<span style="color: red;">*</span></label><br>
+                </div>
+                <div class="controls">
+                    {{form.reason_for_calling}}
+                    <label for="comments" class="active">Причина вызова, (в том числе Актив):<span
+                            style="color: red;">*</span></label><br>
+                    <button type="button" class="btn btn-default" id="conf" data-toggle="modal"
+                        data-target="#confirm-submit">Добавить запись</button>
+                    <div class="modal fade" id="confirm-submit" style="z-index: 9999;" tabindex="-1" role="dialog"
+                        aria-labelledby="myModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h2 class="modal-title">Проверка данных !</h2>
+                                </div>
+                                <div class="modal-body" id="modals">
+                                    <p id="confirm_text"></p>
+                                    <script>
+                                        function chek_fields(personal_info) {
+                                            for (var i = 0; i < personal_info.length; i++) {
+                                                if (personal_info[i] == '') {
+                                                    return false;
+                                                }
+                                            }
+                                            return true;
+                                        }
+                                        $('#conf').click(function () {
+                                            var modals = document.getElementById('modals');
+
+                                            var name = document.getElementById('name');
+                                            var surname = document.getElementById('surname');
+                                            var patronymic = document.getElementById('patronymic');
+
+                                            var date_of_birth = document.getElementById('date_of_birth');
+                                            var address = document.getElementById('address');
+                                            var id_flat = document.getElementById('id_flat');
+                                            var entrance = document.getElementById('entrance');
+                                            var floor = document.getElementById('floor');
+                                            var intercom_code = document.getElementById('intercom_code');
+                                            var tel = document.getElementById('tel');
+                                            var snils = document.getElementById('SNILS');
+                                            var C_M_O_policy = document.getElementById('C_M_O_policy');
+                                            var temperature = document.getElementById('id_temperature');
+                                            var id_cough = document.getElementById('id_cough');
+                                            var id_smell = document.getElementById('id_smell');
+                                            var reason_for_calling = document.getElementById('reason_for_calling');
+                                            var personal_info = [name.value, surname.value, patronymic.value, date_of_birth.value, address.value, id_flat.value, entrance.value, floor.value, intercom_code.value, tel.value, id_cough.value, id_smell.value, reason_for_calling.value];
+                                            if (chek_fields(personal_info)) {
+                                                $("#allowed").prop("disabled", false);
+                                            } else {
+                                                $("#allowed").prop("disabled", true);
+                                            }
+                                            modals.innerHTML = '\
+                                                <p>Убедитесь что данные заполненны верно ! <br>\
+                                                Фамилия Имя Очество : ' + name.value +' '+ surname.value + ' ' + patronymic.value  + ' <br>\
+                                                Дата рождения :' + date_of_birth.value + ' <br>\
+                                                Адрес Проживания : ' + address.value + ' <br>\
+                                                Квартира : ' + id_flat.value + ' <br>\
+                                                Подъезд : ' + entrance.value + ' <br>\
+                                                Этаж дома : ' + floor.value + ' <br>\
+                                                Код домофона :' + intercom_code.value + ' <br>\
+                                                Телефон : ' + tel.value + ' <br>\
+                                                СНИЛС : ' + snils.value + ' <br>\
+                                                Полис ОМС : ' + C_M_O_policy.value + ' <br>\
+                                                Температура ' + temperature.value + '<br>\
+                                                Кашель : ' + id_cough.value + ' <br>\
+                                                Обоняние : ' + id_smell.value + ' <br>\
+                                                Причина вызова : ' + reason_for_calling.value;
+                                        });
+
+                                    </script>
+                                </div>
+
+                                <div class="modal-footer">
+
+                                    <button type="submit" class="ui secondary button element_modal" id="allowed"
+                                        style="width: 25% !important;background: #00a700;">
+                                        Продолжить !
+                                    </button>
+                                    <button type="button" class="ui button element_modal" data-dismiss="modal"
+                                        style="width: 25% !important;background-color: #f36a6a;">
+                                        Отмена
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-right">
+            <div class="form-group">
+                <h2 class="heading">Коды заболеваний </h2>
+                <ul>
+                    {% for code in diseasecode %}
+                    <li>
+                        <label>
+                            <input type="checkbox" name="diseasecode[]" value="{{code.id}}" id="{{code.id}}">
+                            {{code}}
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

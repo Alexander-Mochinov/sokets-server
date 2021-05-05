@@ -1,0 +1,221 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %}  {% endblock %}
+{% load chek_writer_extras %}
+{% block content %}
+ 
+<div id="maincontent" class="ui main container">
+ 
+    <div class="ui stackable grid">
+        <div class="ui grid">
+            {% if not check_perm_SP_flag %}
+                <div class="left floated three  wide column">
+                    <div class="main-title">
+                        <h3>Список Мед. учреждени</h3>
+                    </div>
+                </div>
+                <table class="ui small very compact unstackable selectable orange table" id='myTable_two'>
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th></th>
+                            <th onclick="sortTable(0)">Название</th>
+                            <th></th>
+                            <th></th>
+                            <th>Подразделение (Кол-во)</th>
+                            <th>Email</th>
+                            <th>Контактные Данные</th>
+                            <!-- <th>Действие</th>
+                            <th>Жалобы</th> -->
+                        </tr>
+                    </thead>
+    
+                    <tbody>
+                        {% if list_polycy %}
+                        {% for count, polyclinic in list_polycy %}
+                        <tr>
+                            <td>{{count}}</td>
+                            <td>
+                                {% if polyclinic.id|chek_last_activity_time %}
+                                <img src="{% static 'img/notifi.png' %}" alt="" style="width: 45px;">
+                                {% endif %}
+                            </td>
+                            <td><a href="/detaile-polyclynic/{{polyclinic.id}}/">{{polyclinic.name}}</a> </td>
+                            <td><a href="/polyclinic/staff/{{polyclinic.id}}/">Сотрудники</a> </td>
+                            <td><a href="/polyclinic/subdivisions/{{polyclinic.id}}/">Подразделения</a> </td>
+                            <td>{% if polyclinic.subdivision_polyclinic__count %}{{polyclinic.subdivision_polyclinic__count}}{% else %}------{% endif %}
+                            </td>
+                            <td>{% if polyclinic.email %}{{polyclinic.email}}{% else %}------{% endif %}</td>
+                            <td>{% if polyclinic.contact %}{{polyclinic.contact|safe|truncatechars:150}}{% else %}------{% endif %}
+                            </td>
+                            <!-- <td>
+                                <a href="{% url 'PolyclinicUpdate' polyclinic.pk %}">Изменить</a>/
+                                <a href="{% url 'add_subdevision' polyclinic.pk %}">Добавить подразделение</a>/
+                                {% if polyclinic.direct_recording %}
+                                <a href="{% url 'direct_recording' polyclinic.id %}" style="color: #0eb30e;">Оставить
+                                    заявку</a>
+                                {% endif %}
+                                <a href="{% url 'PolyclinicDelete' polyclinic.pk %}" >Удалить</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'сomplaints' polyclinic.id %}" style="color: red;">Оставить жалобу</a>
+                            </td> -->
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="left floated three  wide column">
+                    <div class="main-title">
+                        <h3>Список Мед. учреждений </h3>
+                    </div>
+                </div>
+                <div class="right floated nine wide column">
+                    <form method="GET" action="{% url 'SearchFilter' %}" id="search_box">
+                        <input type="search" name="s" id="search_street" required placeholder="Улица">
+                        <input type="search" name="b" id="search_house" placeholder="Дом">
+                        <select name="branch" id="search_branch" required>
+                            {% for i in branch %}
+                            <option value="{{i.0}}" {% if i.0 == branch_name %} selected="select" {% endif %}>{{i.0}}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">
+                            Найти
+                        </button>
+                    </form>
+                </div>
+                <table class="ui small very compact unstackable selectable orange table" id='myTable_two'>
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th></th>
+                            <th onclick="sortTable(0)">Название</th>
+                            <th></th>
+                            <th></th>
+                            <th>Подразделение (Кол-во)</th>
+                            <th>Email</th>
+                            <th>Контактные Данные</th>
+                            <th>Действие</th>
+                            <th>Жалобы</th>
+                        </tr>
+                    </thead>
+    
+                    <tbody>
+                        {% if list_polycy %}
+                        {% for count, polyclinic in list_polycy %}
+                        <tr>
+                            <td>{{count}}</td>
+                            <td>
+                                {% if polyclinic.id|chek_last_activity_time %}
+                                <img src="{% static 'img/notifi.png' %}" alt="" style="width: 45px;">
+                                {% endif %}
+                            </td>
+                            <td><a href="/detaile-polyclynic/{{polyclinic.id}}/">{{polyclinic.name}}</a> </td>
+                            <td><a href="/polyclinic/staff/{{polyclinic.id}}/">Сотрудники</a> </td>
+                            <td><a href="/polyclinic/subdivisions/{{polyclinic.id}}/">Подразделения</a> </td>
+                            <td>{% if polyclinic.subdivision_polyclinic__count %}{{polyclinic.subdivision_polyclinic__count}}{% else %}------{% endif %}
+                            </td>
+                            <td>{% if polyclinic.email %}{{polyclinic.email}}{% else %}------{% endif %}</td>
+                            <td>{% if polyclinic.contact %}{{polyclinic.contact|safe|truncatechars:150}}{% else %}------{% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'PolyclinicUpdate' polyclinic.pk %}">Изменить</a>/
+                                <a href="{% url 'add_subdevision' polyclinic.pk %}">Добавить подразделение</a>/
+                                {% if polyclinic.direct_recording %}
+                                <a href="{% url 'direct_recording' polyclinic.id %}" style="color: #0eb30e;">Оставить
+                                    заявку</a>
+                                {% endif %}
+                                <!-- <a href="{% url 'PolyclinicDelete' polyclinic.pk %}" >Удалить</a> -->
+                            </td>
+                            <td>
+                                <a href="{% url 'сomplaints' polyclinic.id %}" style="color: red;">Оставить жалобу</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <!-- <input id="chat-message-input-x" type="text" /><input id="chat-message-input-y" type="text" /><br />
+                <input id="chat-message-new" type="button" value="Send new data" />
+                <input id="chat-message-submit" type="button" value="Send" />
+                <input id="chat-message-submit-close" type="button" value="Close" />
+                <textarea id="chat-log" cols="100" rows="20"></textarea><br />
+                <br><br>
+                <div class="" id="JSON_DATA">
+                    <p></p>
+                </div> -->
+            {% endif %}
+        </div>
+    </div>
+</div>
+ 
+<div id="address_modal" class="modal" style="padding-top: 0 !important; overflow: hidden;">
+    <div class="table" style="background-color:rgb(255, 255, 255); display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 4% auto 1% auto;width:50%">
+        <div class="container" style="background-color:rgb(255, 255, 255); overflow-y: scroll;height: 450px;width:90%">
+            <table class="ui small very compact unstackable selectable orange table" id="addr_table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(4)">Мед. Учреждание</th>
+                        <th onclick="sortTable(4)">Дом</th>
+                        <th onclick="sortTable(4)">Улица</th>
+                        <th>Подразделение</th>
+                        <th onclick="sortTable(4)">Участок</th>
+                        <th onclick="sortTable(2)">Email</th>
+                        <th onclick="sortTable(1)">Контактные Данные</th>
+                        <th>Записать пациента</th>
+                    </tr>
+                </thead>
+                <tbody id="address" style="overflow-y: scroll;height: 400px;">
+                </tbody>
+            </table>
+        </div>
+        <button type="button" onclick=" CloseTable()"
+                class=" fluid ui button" style="width: 50%; margin: 2%;">Закрыть
+        </button>
+    </div>
+</div>
+ 
+<script src="{% static 'js/list_polyclinic.js' %}"></script>
+<script src="{% static 'js/sort_table.js' %}"></script>
+<!-- <script>
+ 
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/coordinates/token=8dcb1f9895caa23e1a8cced46f017b762a7f0acd/'
+    );
+    chatSocket.onmessage = function (e) {
+        var data = JSON.parse(e.data);
+        console.log(data);
+    };
+    chatSocket.onclose = function (e) {
+        alert(`[close] Соединение закрыто чисто, код=${e.code} причина=${e.reason}`);
+        console.log(e);
+        console.error('Chat socket closed unexpectedly');
+    };
+    document.querySelector('#chat-message-new').onclick = function (e) {
+        chatSocket.send(JSON.stringify({ "started_to": 31 }));
+        chatSocket.send(JSON.stringify({ "arrived_to": 31 }));
+        chatSocket.send(JSON.stringify({ "finished": 31, "finish_lat": 53.202341, "finish_lon": 50.141862 }));
+    };
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        var mess_x = document.querySelector('#chat-message-input-x');
+        var mess_y = document.querySelector('#chat-message-input-y');
+        var message_x = mess_x.value;
+        var message_y = mess_y.value;
+        chatSocket.send(JSON.stringify({ 'get_db_user': 1, 'start_point_lat': 53.202341, 'start_point_lon': 50.141862, 'type_of_movement': 'car', 'started_to': 5 }));
+    };
+    document.querySelector('#chat-message-submit-close').onclick = function (e) {
+        chatSocket.close(1000, 'unknown');
+    };
+</script> -->
+ 
+{% endblock %}

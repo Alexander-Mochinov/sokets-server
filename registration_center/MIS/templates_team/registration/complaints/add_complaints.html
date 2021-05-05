@@ -1,0 +1,95 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block script %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
+{% endblock %}
+{% block title %} Регистрация нового пользователя {% endblock %}
+
+
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+	<div class="main-title" style="text-align:right;">
+		{% if messages %}
+		{% for message in messages %}
+		<h4>{{ message }}</h4>
+		{% endfor %}
+		{% endif %}
+	</div>
+	<form action="." method="post" enctype="Multipart/form-data" style="display: flex;">
+		{% csrf_token %}
+		<div class="form-left">
+			<div class="form-group">
+				<h2 class="heading">Заполните поля: </h2>
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.fio.errors}}</div><br>
+				<div class="controls">
+					{{form.fio}}
+					<label for="fio" class="active">ФИО:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.institution.errors}}</div>
+				<br>
+				<div class="controls">
+					{{form.institution}}
+					<label for="fio" class="active">Учреждение:</label><br>
+				</div>
+
+
+			</div>
+			<div class="form-group">
+				<h2 class="heading" class="active">Контактные данные:</h2>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.phone.errors}}</div><br>
+				<div class="controls">
+					{{form.phone}}
+					<label for="phone" class="active">Телефон: </label><br>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="controls">
+					{{form.text}}
+					<label for="comments" class="active">Жалоба:<span style="color: red;">*</span></label><br>
+					<button type="button" class="btn btn-default" id="conf" data-toggle="modal"
+						data-target="#confirm-submit">Добавить запись</button>
+					<div class="modal fade" id="confirm-submit" style="z-index: 9999;" tabindex="-1" role="dialog"
+						aria-labelledby="myModalLabel">
+						<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h2 class="modal-title">Проверка данных !</h2>
+								</div>
+								<div class="modal-body" id="modals">
+									<p id="confirm_text"></p>
+								</div>
+
+								<div class="modal-footer">
+
+									<button type="submit" class="ui secondary button element_modal" id="allowed"
+										style="width: 25% !important;background: #00a700;">
+										Продолжить !
+									</button>
+									<button type="button" class="ui button element_modal" data-dismiss="modal"
+										style="width: 25% !important;background-color: #f36a6a;">
+										Отмена
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="form-right">
+			<div class="form-group">
+			</div>
+		</div>
+	</form>
+</div>
+
+
+
+
+<script src="{% static 'js/add_complaints.js' %}"></script>
+{% endblock %}

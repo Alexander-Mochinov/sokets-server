@@ -1,0 +1,231 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Запись на приём {% endblock %}
+{% block content %}
+<div id="maincontent" class="ui main container">
+    <div class="content">
+        <div class="ui twenty equal width form" style="margin-bottom: 25px;">
+			<h2>Запись к врачу на {{ticket.work_chedule.date}}</h2>
+            <b>Часы приёма: {{ticket.start_date_of_appointment}} - {{ticket.appointment_end_date}}</b> <br>
+            <b>Время на осмотр: {{ticket.number_for_inspection}} мин</b> <br>
+            <b>Доктор: {{ticket.doctor}}</b> <br><br><hr><br><br>
+			<form action="." method="POST" enctype="multipart/form-data">
+				<div class="profile__form-datas" >
+					{% csrf_token %}
+					<div class="fields">
+						<div class="field">
+							<label for="">Фамилия</label>
+                            <input type="text" id="surname" name="surname" required>
+						</div>
+						<div class="field">
+							<label for="">Имя</label>
+                            <input type="text" id="name" name="name" required>
+						</div>
+						<div class="field">
+							<label for="">Отчество</label>
+                            <input type="text" id="patronymic" name="patronymic" required>
+						</div>
+					</div>
+					<div class="fields">
+                        <div class="field">
+                            <label for="">Номер телефона</label>
+                            <input type="text" value="+7" maxlength="12" name="phone_number" id="phone_number" required>
+						</div>
+                        <div class="field">
+                            <label for="">Полис ОМС</label>
+                            <input type="text" maxlength="16" name="oms" id="oms" required>
+						</div>
+                        <div class="field">
+                            <label for="">Полис ДМС</label>
+                            <input type="text" maxlength="16" name="dms" id="dms">
+						</div>
+					</div>
+					
+					<button class="ui right floated button" type="button" onclick="get_pacient()">Заполнить талон</button>
+				</div>
+			</form>
+		</div>
+    </div>
+</div>
+
+<!-- Set registor -->
+<div id="not_found-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_add_and_reg_ticket=" action="{% url 'registration_pacient_and_accept' ticket.id %}"
+		style="margin: 1% auto 8% auto;width:35%" method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll; height: 250px;">
+			<h2 class="heading">Пациент не найден</h2>
+			<div class="fields">
+				<div class="field">
+					<label for="">Фамилия</label>
+					<input type="text" id="surname_not_found" name="surname_not_found" class="input_add_note_doctor" required>
+				</div>
+				<div class="field">
+					<label for="">Имя</label>
+					<input type="text" id="name_not_found" name="name_not_found" class="input_add_note_doctor" required>
+				</div>
+				<div class="field">
+					<label for="">Отчество</label>
+					<input type="text" id="patronymic_not_found" name="patronymic_not_found"  class="input_add_note_doctor" required>
+				</div>
+			</div>
+			<div class="fields">
+				<div class="field">
+					<label for="">Номер телефона</label>
+					<input type="text" value="+7" maxlength="12" name="phone_number_not_found" class="input_add_note_doctor" id="phone_number_not_found" required>
+				</div>
+				<div class="field">
+					<label for="">E-mail</label>
+					<input type="email" name="email_not_found" class="input_add_note_doctor" id="email_not_found" required>
+				</div>
+				<div class="field">
+					<label for="">Полис ОМС</label>
+					<input type="text" maxlength="16" name="oms_not_found" id="oms_not_found" class="input_add_note_doctor" required>
+				</div>
+				<div class="field">
+					<label for="">Полис ДМС</label>
+					<input type="text" maxlength="16" name="dms_not_found" id="dms_not_found" class="input_add_note_doctor">
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_doctors" type="submit"
+				onclick="document.getElementById('not_found-modal-id').style.display='block'">Отправить запрос на подтверждение и регистрацию
+			</button>
+			<br>
+			<button onclick="document.getElementById('not_found-modal-id').style.display='none'" type="button" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+
+<div id="found-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_add_ticket" action=""
+		style="margin: 1% auto 8% auto;width:35%" method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll; height: 250px;">
+			<h2 class="heading">Пациент найден</h2><div class="fields">
+				<div class="field">
+					<label for="">Фамилия</label>
+					<input type="text" id="surname_found" name="surname_found" class="input_add_note_doctor" required>
+				</div>
+				<div class="field">
+					<label for="">Имя</label>
+					<input type="text" id="name_found" name="name_found" class="input_add_note_doctor">
+				</div>
+				<div class="field">
+					<label for="">Отчество</label>
+					<input type="text" id="patronymic_found" name="patronymic_found"  class="input_add_note_doctor">
+				</div>
+			</div>
+			<div class="fields">
+				<div class="field">
+					<label for="">Номер телефона</label>
+					<input type="text" value="+7" maxlength="12" name="phone_number_found" class="input_add_note_doctor" id="phone_number_found">
+				</div>
+				<div class="field">
+					<label for="">Полис ОМС</label>
+					<input type="text" maxlength="16" name="oms_found" id="oms_found" class="input_add_note_doctor">
+				</div>
+				<div class="field">
+					<label for="">Полис ДМС</label>
+					<input type="text" maxlength="16" name="dms_found" id="dms_found" class="input_add_note_doctor">
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_doctors" type="submit"
+				onclick="document.getElementById('found-modal-id').style.display='block'">Добавить запись
+			</button>
+			<br>
+			<button onclick="document.getElementById('found-modal-id').style.display='none'" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+<script>
+
+function get_pacient(){
+	var errors = [];
+	if(document.querySelector("#oms").value == '')
+        errors.push('не заполнено поле oms');
+    if(document.querySelector("#phone_number").value == '')
+        errors.push('не заполнено поле номера телефона');
+    if(document.querySelector("#surname").value == '')
+        errors.push('не заполнено поле Фамилии');
+    if(document.querySelector("#name").value == false)
+        errors.push('не заполнено поле Имени');
+    if(document.querySelector("#patronymic").value == false)
+        errors.push('не заполнено поле Отчества');
+	if (errors.length != 0){
+		alert(errors.join('\n'));
+	} else {
+
+		let surname = $('#surname').val();
+		let name = $('#name').val();
+		let patronymic = $('#patronymic').val();
+		let num_phone = $("#phone_number").val();
+		let oms = $("#oms").val();
+		let dms = $("#dms").val();
+		let dataString = '';
+
+
+
+		let urls = '/get_patient/'
+		dataString += 'phone_number=' + String(num_phone) + '&oms=' + oms + '&dms=' + dms;
+		$.ajax({
+			type: "GET",
+			url: urls,
+			data: dataString,
+			cache: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response == false){
+					console.log(typeof(response))
+
+					let surname_not_found = $('#surname_not_found')[0];
+					let name_not_found = $('#name_not_found')[0];
+					let patronymic_not_found = $('#patronymic_not_found')[0];
+					let num_phone_not_found = $("#phone_number_not_found")[0];
+					let oms_not_found = $("#oms_not_found")[0];
+					let dms_not_found = $("#dms_not_found")[0];
+
+					surname_not_found.value = surname;
+					name_not_found.value = name;
+					patronymic_not_found.value = patronymic;
+					num_phone_not_found.value = num_phone;
+					oms_not_found.value = oms;
+					dms_not_found.value = dms;
+					document.getElementById('not_found-modal-id').style.display='block';
+				} else {
+					console.log(response)
+
+					let surname_found = $('#surname_found')[0];
+					let name_found = $('#name_found')[0];
+					let patronymic_found = $('#patronymic_found')[0];
+					let num_phone_found = $("#phone_number_found")[0];
+					let oms_found = $("#oms_found")[0];
+					let dms_found = $("#dms_found")[0];
+					console.log(response.id)
+					surname_found.value = response.surname;
+					name_found.value = response.name;
+					patronymic_found.value = response.patronymic;
+					num_phone_found.value = response.phone_number;
+					oms_found.value = response.OMS;
+					dms_found.value = response.DMS;
+					let urls = '/accept_ticket/{{ticket.id}}/' + String(response.id) + '/';
+					console.log(urls)
+					let modal = $('.modal_add_ticket').attr("action", urls);
+					document.getElementById('found-modal-id').style.display='block';
+				}
+			}
+		});
+
+	}
+}
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} График работы Доктора{% endblock %}
+{% block content %}
+<div id="maincontent" class="ui main container">
+    <div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+      <div class="main-title">
+      </div>
+    </div>
+    <div class="right floated six wide column calendar-box">
+      <div class="ui cards">
+        {% for i in tikets %}
+          
+          <div class="card">
+            <div class="content">
+              <div class="header">{{i.work_chedule.date}}</div>
+              <div class="description">
+                {{i.start_date_of_appointment}} -- {{i.appointment_end_date}}
+              </div>
+            </div>
+            <div class="ui bottom attached button">
+              <a href="">Записаться</a>
+            </div>
+          </div>
+        {% endfor %}
+        
+
+      </div>
+
+
+      <br><hr><br>
+      {{data}}
+      <div class="ui cards">
+        {% for i in data %}
+        {{i}}
+          {% for j in data.i %}
+            {{j}}
+          {% endfor %}
+          <!-- <div class="card">
+            <div class="content">
+              <div class="header">{{i.work_chedule.date}}</div>
+              <div class="description">
+                {{i.start_date_of_appointment}} -- {{i.appointment_end_date}}
+              </div>
+            </div>
+            <div class="ui bottom attached button">
+              <a href="">Записаться</a>
+            </div>
+          </div> -->
+        {% endfor %}
+      </div>
+    </div>
+</div>
+{% endblock %}

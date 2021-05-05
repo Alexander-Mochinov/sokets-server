@@ -1,0 +1,882 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %}  {% endblock %}
+{% load chek_writer_extras %}
+
+
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+	<div class="ui grid">
+		<div class="left floated six wide column">
+			<h3>Info </h3>
+		</div>
+		<div class="right floated nine wide column">
+			<button 
+				class="ui right floated button"
+				id="edit_profile"
+				type="button" 
+				onclick="document.getElementById('modal_edit_profile').style.display='block'">Редактировать
+			</button>
+
+		</div>
+	</div>
+	<div class="ui grid">
+		<div class="sixteen wide column computer only">
+			<div class="ui segment">
+				<p><b>Название: </b>{{polyclinic_info}}</p>
+				<p><b>E-mail: </b> {% if polyclinic_info.email %}{{polyclinic_info.email}}{% else %}------{% endif %}
+				</p>
+				<p><b>Контакты:
+					</b>{% if polyclinic_info.contact %}{{polyclinic_info.contact|safe}}{% else %}------{% endif %}
+					{% if polyclinic_info.redirect %}
+				<p style="color: red;">Вызов врача нами не принимается !<br>Предоставить контакты поликлиники.</p>
+				{% else %}
+				{% if flag %}
+				<p style="color: red;">Вызов врача нами не принимается !<br>Предоставить контакты поликлиники.</p>
+				{% else %}
+
+				{% endif %}
+
+				{% endif %}
+				</p>
+			</div>
+		</div>
+
+		<br>
+	</div>
+	<div class="column" style="margin-top: 30px;">
+		<div class="tabs" style="margin-bottom: 30px;">
+			<input type="radio" name="tab-btn" id="tab-btn-1" data-toggle="tab" value="">
+			<label for="tab-btn-1">Список адресов</label>
+			<input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+			<label for="tab-btn-2">Список участков</label>
+			<input type="radio" name="tab-btn" id="tab-btn-3" data-toggle="tab" value="">
+			<label for="tab-btn-3">Список палат</label>
+			<input type="radio" name="tab-btn" id="tab-btn-4" data-toggle="tab" value="">
+			<label for="tab-btn-4">Список коек</label>
+			<input type="radio" name="tab-btn" id="tab-btn-5" data-toggle="tab" value="">
+			<label for="tab-btn-5">Список поступлений</label>
+
+			<div id="content-1">
+				<div class="ui grid">
+					<div class="left floated six wide column">
+						<h3>Список адресов </h3>
+					</div>
+				</div>
+				<div class="ui container">
+
+				</div>
+			</div>
+			<div id="content-2">
+				<div class="ui grid">
+					<div class="left floated six wide column">
+						<h3>Список участков </h3><br>
+					</div>
+				</div>
+				<div class="two ui buttons">
+					<button class="ui button"
+						onclick="document.getElementById('modal_set_zone').style.display='block'">Добавить
+						участок</button>
+					<button class="ui button"
+						onclick="document.getElementById('modal_dont_set_zone').style.display='block'">Не
+						прикреплённые
+						адреса</button>
+				</div>
+				<hr>
+				<div class="ui container">
+					<div class="ui unstackable items"><br>
+						{% if zone %}
+						{% for zone_s in zone %}
+						<div class="item">
+							<div class="content">
+								<a class="header" style="padding: 11px; display: flex; justify-content: space-between;">
+									<div style="margin-top: auto; margin-bottom: auto;">{{zone_s}}</div>
+									<div>
+										<button class="ui right floated button address_zone_id"
+											onclick="document.getElementById('modal_attached_addresses').style.display='block'">Прикреплённые
+											адреса</button>
+										<button class="ui right floated button modal_add_address_zone_id"
+											onclick="document.getElementById('modal_add_address').style.display='block'">Добавить
+											адрес</button>
+										<span style="display: none;">{{zone_s.id}}</span>
+									</div>
+								</a>
+							</div>
+						</div>
+						<hr>
+						{% endfor %}
+						{% else %}
+						Нет данных !
+						{% endif %}
+					</div>
+				</div><br><br>
+			</div>
+			<div id="content-3">
+				<div class="main-title" style="text-align:center;">
+					{% if messages %}
+					{% for message in messages %}
+					<h4 style="color: red;">Ошибка: {{ message }}</h4>
+					{% endfor %}
+					{% endif %}
+				</div>
+				<div class="ui grid">
+					<div class="left floated six wide column">
+						<h3>Список палат </h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable orange table" id='myTable_three'
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Номер</th>
+							<th>Описание</th>
+							<th>Тип</th>
+							<th>Всего коек</th>
+							<th>Свободных коек</th>
+							<th></th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for ward in wards %}
+						<tr>
+							<td>{{forloop.counter}}</td>
+							<td>{{ward.number}}</td>
+							<td>{{ward.description}}</td>
+							<td>{{ward.get_type_display}}</td>
+							<td>{{ward.total_bed_count}}</td>
+							<td>{{ward.free_bed_count}}</td>
+							<td>
+								<img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" 
+								class="edit_doctor" onclick="Open_edit_ward({{ ward.id }});">
+							</td>
+							<td>
+								<a href="{% url 'delete_ward' ward.id %}">
+									<img src="{% static 'img/delete.png' %}" alt="" style="width: 18px;"
+										class="edit_doctor">
+								</a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				<div class="ui container">
+					<button class="ui button" onclick="document.getElementById('ward-modal-id').style.display='block'">Добавить
+						палату</button>
+				</div><br><br>
+				{% comment %}
+				{% endcomment %}
+			</div>
+
+			<div id="content-4">
+				<div class="ui grid">
+					<div class="left floated six wide column">
+						<h3>Список коек </h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable orange table" id='myTable_four'
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th onclick="sortTable(0)">Палата</th>
+							<th>Номер</th>
+							<th>Статус</th>
+							<th>Пациент</th>
+							<th></th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for bed in beds %}
+						<tr>
+							<td>{{bed.ward}}</td>
+							<td>{{bed.number}}</td>
+							<td>{{bed.get_status_display}}</td>
+							<td>{{bed.patient}}</td>
+							<td>
+								<img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_doctor"
+									onclick="document.getElementById('bed-modal-id').style.display='block'">
+							</td>
+							<td>
+								<a href="{% url 'delete_bed' bed.id %}">
+									<img src="{% static 'img/delete.png' %}" alt="" style="width: 18px;"
+										class="edit_doctor">
+								</a>
+							</td>
+							{%comment%}
+							<td>
+								<div class="div_edit_bed {{bed.id}}">
+									<form>
+										<button class="ui button" type="submit" class='edit_bed_btn'>Редактировать</button>
+									</form>
+								</div>
+							</td>
+							{%endcomment%}
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				<div class="ui container">
+					<button class="ui button" onclick="document.getElementById('bed-modal-id').style.display='block'">Добавить
+						койки</button>
+				</div><br><br>
+			</div>
+
+			<div id="content-5">
+				<div class="ui grid">
+					<div class="left floated six wide column">
+						<h3>Список поступлений </h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable orange table" id='myTable_admissions'
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th onclick="sortTable(0)">Фамилия</th>
+							<th>Имя</th>
+							<th>Отчество</th>
+							<th>Дата поступления</th>
+							<th>Палата/койка</th>
+							<th>Предполагаемая дата выписки</th>
+							<th>Дата выписки</th>
+							<th>Источник</th>
+							<th>Состояние</th>
+							<th>Диагноз</th>
+							<th>Направление</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for adm in admissions %}
+						<tr>
+							<td>{{adm.patient.surname}}</td>
+							<td>{{adm.patient.name}}</td>
+							<td>{{adm.patient.patronymic}}</td>
+							<td>{{adm.admission_date}}</td>
+							<td>{{adm.bed}}</td>
+							<td>{{adm.discharge_planned_date|default_if_none:"-"}}</td>
+							<td>{{adm.discharge_date|default_if_none:"-"}}</td>
+							<td>{{adm.get_source_display}}</td>
+							<td>{{adm.state}}</td>
+							<td>{{adm.diagnosis}}</td>
+							<td>{{adm.direction}}</td>
+							{% endfor %}
+					</tbody>
+				</table>
+				<div class="ui container">
+					<button class="ui button" onclick="document.getElementById('admission-modal-id').style.display='block'">Новое
+						поступление</button>
+				</div><br><br>
+			</div>
+
+		</div>
+	</div>
+</div>
+</div><br>
+
+
+
+<!-- Modal windows -->
+
+
+
+<div id="modal_set_zone_a_doctor" class="modal">
+	<form class="modal-content animate modal_set_zone_a_doctor" method="POST"
+		action="{% url 'create_zone' polyclinic_info.id %}">
+		{% csrf_token %}
+		<div class="container" style="height: 350px;overflow-y: scroll;">
+			<dl id="checkboxes">
+				<dt>
+					<h4>Установить участок:</h4>
+				</dt>
+				{% for i in zone %}
+				<label><input type="checkbox" name="zone[]" value="{{i.id}}"> {{i}}</label><br>
+				{% endfor %}
+			</dl>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button class="fluid ui button"
+				onclick="document.getElementById('modal_set_zone_a_doctor').style.display='block'">Установить</button>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button onclick=" document.getElementById('modal_set_zone_a_doctor').style.display='none'"
+				class=" fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- modal_edit_profile -->
+<div id="modal_edit_profile" class="modal">
+	<form class="modal-content animate modal_edit_profile" method="POST" action="{% url 'update_profile' polyclinic_info.id %}"
+		style="margin: -2% auto 6% auto !important;">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 510px;">
+			<h2 class="heading">Обязательные поля</h2>
+			<label for="institution_name">Название учреждения:</label>
+			<input 
+			type="text" id="institution_name" 
+			
+			name="institution_name"
+			class="input_edit_profile"
+			required>
+
+			<label for="city">Город:</label>
+			<select id="city" name="city" class="input_edit_profile" required>
+				{% for town in towns %}
+					<option value="{{town.id}}" {% if polyclinic_info.town.id == town.id %}selected{% endif %}>{{town.name}}</option>
+				{% endfor %}
+			</select>
+
+			<label for="address">Адрес:</label>
+			<input 
+			type="address" id="address" 
+			name="address"
+			class="input_edit_profile"
+			required>
+
+			<label for="email">Эл. адрес:</label>
+			<input 
+			type="email" id="email" 
+			name="email"
+			class="input_edit_profile"
+			required>
+
+			<label for="contact_data">Контактные данные:</label>
+			<textarea 
+			name="contact_data" id="contact_data"
+			cols="20" rows="10"
+			class="input_edit_profile" 
+			required>
+			</textarea>
+
+			<label for="old_password" style="font-size: large;">Изменить пароль</label>
+			<div id="Change_password">
+				<label for="old_password">Старый пароль</label>
+				<input 
+				type="password" id="old_password" 
+				name="old_password"
+				class="input_edit_profile"
+				>
+
+				<label for="new_password">Новый пароль</label>
+				<input 
+				type="text" id="new_password" 
+				name="new_password"
+				class="input_edit_profile"
+				>
+
+				<label for="new_repeat_password">Повторите новый пароль</label>
+				<input 
+				type="password" id="new_repeat_password" 
+				name="new_repeat_password"
+				class="input_edit_profile"
+				>
+			</div>
+		</div>
+		  <div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" type="submit"
+				onclick="document.getElementById('modal_edit_profile').style.display='block'">Изменить</button><br>
+			<button onclick="document.getElementById('modal_edit_profile').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+
+<!-- modal_add_address -->
+<div id="modal_add_address" class="modal">
+	<form class="modal-content animate modal_add_address" method="POST" action="."
+		style="width: 55% !important;margin: 0% auto 15% auto !important;">
+		{% csrf_token %}
+		<div class="container ID_LIST" style="height: 350px;
+    overflow-y: scroll;">
+			<dl id="checkboxes">
+				<dt>
+					<h4>Установить адрес участку:</h4>
+				</dt><br>
+				<div id="list_set_address"></div>
+			</dl>
+			<input type="hidden" name="id_zone" class="zone_id">
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button class="fluid ui button" onclick="document.getElementById('modal_add_address').style.display='block'"
+				type="submit">Установить адрес(а)</button><br>
+			<button type="button" onclick="document.getElementById('modal_add_address').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- Attached address -->
+<div id="modal_attached_addresses" class="modal">
+	<form class="modal-content animate" method="POST" action="{% url 'delete_address' polyclinic_info.id %}"
+		style="width: 55% !important;margin: 0% auto 15% auto !important;">
+		{% csrf_token %}
+		<div class="container" style="height: 350px;overflow-y: scroll;">
+			<dl id="checkboxes">
+				<dt>
+					<h4>Список прикреплённых адресов к участку мед. учреждения:</h4>
+				</dt><br>
+				<div id="modal_attached_add"></div>
+			</dl>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button class="fluid ui button"
+				onclick="document.getElementById('modal_attached_addresses').style.display='block'">Удалить
+				адрес(а)</button><br>
+			<button type="button" onclick="document.getElementById('modal_attached_addresses').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+
+
+
+
+<!-- List dont_set_zone -->
+<div id="modal_dont_set_zone" class="modal">
+	<form class="modal-content animate" method="POST" action="{% url 'set_detached_addresses' polyclinic_info.id %}"
+		style="width: 55% !important;margin: 0% auto 15% auto !important;">
+		{% csrf_token %}
+		<div class="container" style="height: 350px;
+    overflow-y: scroll;">
+			<dl id="checkboxes">
+				<dt>
+					<h4>Список не прикреплённых адресов мед. учреждения:</h4>
+				</dt><br>
+				<div id="list_address"></div>
+			</dl>
+		</div>
+		<div class="container">
+			<label for="">Выберите участок</label>
+			<select name="detached_addresses_zone" required id="" class="input_add_note">
+				<option value=""></option>
+				{% for zone in detached_addresses_zone %}
+				<option value="{{zone.id}}">{{zone}}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button class="fluid ui button"
+				onclick="document.getElementById('modal_dont_set_zone').style.display='block'">Установить
+				адрес(а)</button><br>
+			<button type="button" onclick="document.getElementById('modal_dont_set_zone').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- Add Zone -->
+<div id="modal_set_zone" class="modal">
+	<form class="modal-content animate" method="POST" action="{% url 'create_zone' polyclinic_info.id %}">
+		{% csrf_token %}
+		<div class="container">
+			<label for="uname"><b>Название участка: </b></label>
+			{{form_add_zone.number}}
+			<label for="psw"><b>Подразделение: </b></label>
+			{{form_add_zone.subdivision}}
+
+			<button class="fluid ui button"
+				onclick="document.getElementById('modal_set_zone').style.display='block'">Добавить
+				участок</button>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button type="button" onclick="document.getElementById('modal_set_zone').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- Add Note -->
+<div id="modal-id" class="modal">
+	<form class="modal-content animate" method="POST" action="{% url 'add_note_on_desk' polyclinic_info.id %}">
+		{% csrf_token %}
+		<div class="container">
+			<label for="uname"><b>Тема:</b></label>
+			<input type="text" class="input_add_note" name="theme" required>
+			<label for="psw"><b>Заметка:</b></label>
+			<textarea id="" cols="30" rows="10" name="message" class="input_add_note"></textarea>
+			<button class="fluid ui button" onclick="document.getElementById('modal-id').style.display='block'">Добавить
+				заметку</button>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button type="button" onclick="document.getElementById('modal-id').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- Edit Note -->
+<div id="modal_edit" class="modal">
+	<form class="modal-content animate" method="POST" id="change_data_form">
+		{% csrf_token %}
+		<div class="container">
+			<label for="uname"><b>Тема:</b></label>
+			<input type="text" class="input_add_note" id='input_edit_note_topic' name="theme" required>
+			<label for="psw"><b>Заметка:</b></label>
+			<textarea cols="30" rows="10" name="message" class="input_add_note" id="text_edit_note_topic"></textarea>
+			<button class="fluid ui button"
+				onclick="document.getElementById('modal_edit').style.display='block'">Редактировать
+				заметку</button>
+		</div>
+		<div class="container" style="background-color:#f1f1f1">
+			<button type="button" onclick="document.getElementById('modal_edit').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+
+<!-- Set wards -->
+<div id="ward-modal-id" class="modal" style="padding-top: 0 !important;">
+	<form class="modal-content animate" action="{% url 'create_ward' polyclinic_info.id %}"
+		style="margin: 2% auto 8% auto;width:35%" method="POST">
+		{% csrf_token %}
+		<div class="container">
+			<label for="number">Номер</label>
+			<input type="number" id="number" name="number" class="input_add_note_ward" min="1" required>
+			<label for="description">Описание</label>
+			<input type="text" id="description" name="description" class="input_add_note_ward" required>
+			<label for="bed_count">Количество коек (от 1 до 25, необязательно указывать)</label>
+			<input type="number" id="bed_count" name="bed_count" class="input_add_note_ward" min="1" max="25">
+			<label for="type">Тип</label>
+			<select name="type" id="type" class="input_add_note_ward" required>
+				<option value="COVID">COVID</option>
+				<option value="OTHER">Прочее</option>
+			</select>
+		</div>
+		<div class="modal-footer">
+			<button class="fluid ui button"
+				onclick="document.getElementById('ward-modal-id').style.display='block'">Сохранить</button>
+			<br>
+			<button type="button" onclick="document.getElementById('ward-modal-id').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- Edit wards -->
+<div id="ward-modal-edit" class="modal" style="padding-top: 0 !important;">
+	<form class="modal-content animate" action=""
+		style="margin: 2% auto 8% auto;width:35%" method="POST">
+		{% csrf_token %}
+		<div class="container">
+			<label for="number">Номер</label>
+			<input type="number" id="ward_edit_number" name="ward_edit_number" class="input_add_note_ward" min="1" required>
+			<label for="description">Описание</label>
+			<input type="text" id="ward_edit_description" name="ward_edit_description" class="input_add_note_ward" required>
+			<label for="type">Тип</label>
+			<select name="ward_edit_type" id="ward_edit_type" class="input_add_note_ward" required>
+				<option value="COVID">COVID</option>
+				<option value="OTHER">Прочее</option>
+			</select>
+		</div>
+		<div class="modal-footer">
+			<button class="fluid ui button"
+				onclick="Did_Edit_ward()">Редактировать</button>
+			<br>
+			<button type="button" onclick="document.getElementById('ward-modal-edit').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- Set beds -->
+<div id="bed-modal-id" class="modal" style="padding-top: 0 !important;">
+	<form class="modal-content animate" action="{% url 'create_bed' polyclinic_info.id %}"
+	  style="margin: 2% auto 8% auto;width:35%" method="POST">
+	  {% csrf_token %}
+	  <div class="container">
+		<label for="ward">Палата</label>
+		<select name="ward" id="ward" class="input_add_note_bed">
+		  {% for ward in wards %}
+		  <option value="{{ ward.id }}">{{ ward.number }} ({{ ward.description }})</option>
+		  {% endfor %}
+		</select>
+		<label for="number">Количество (от 1 до 10)</label>
+		<input type="number" id="bed_count" name="bed_count" min="1" max="10" class="input_add_note_bed" value="1">
+		<label for="description">Описание</label>
+		<input type="text" id="description" name="description" class="input_add_note_bed">
+	  </div>
+	  <div class="modal-footer"><button class="fluid ui button"
+		  onclick="document.getElementById('bed-modal-id').style.display='block'">Сохранить</button><br>
+		<button type="button" onclick="document.getElementById('bed-modal-id').style.display='none'"
+		  class="fluid ui button">Отмена</button>
+	  </div>
+	</form>
+  </div>
+
+
+<!-- Set admissions -->
+<div id="admission-modal-id" class="modal" style="padding-top: 0 !important;">
+	<form class="modal-content animate" action="{% url 'create_admission' polyclinic_info.id %}"
+		style="margin: 2% auto 8% auto;width:35%" method="POST">
+		{% csrf_token %}
+		<div class="container">
+			<label for="surname">Фамилия</label>
+			<input type="text" id="surname" name="surname" class="input_add_note_admission" required>
+			<label for="name">Имя</label>
+			<input type="text" id="name" name="name" class="input_add_note_admission" required>
+			<label for="patronymic">Отчество</label>
+			<input type="text" id="patronymic" name="patronymic" class="input_add_note_admission" required>
+			<label for="birth_date">Дата рождения</label>
+			<input type="date" id="birth_date" name="birth_date" class="input_add_note_admission" required>
+			<label for="OMS">Номер полиса ОМС</label>
+			<input type="text" id="OMS" name="OMS" pattern="[0-9]{16}" maxlength="16" class="input_add_note_admission" required>
+			<label for="phone_number">Номер телефона</label>
+			<input type="text" id="phone_number" name="phone_number" pattern="\+7[0-9]{10}"
+				class="input_add_note_admission" value="+7" required>
+			<label for="relatives_phone_number">Номер телефона родственника</label>
+			<input type="text" id="relatives_phone_number" name="relatives_phone_number" pattern="(\+7[0-9]{10})|^$"
+				class="input_add_note_admission" value="+7">
+			<label for="address">Адрес</label>
+			<input type="text" id="address" name="address" class="input_add_note_admission" required>
+			<label for="registration_address">Адрес регистрации</label>
+			<input type="text" id="registration_address" name="registration_address" class="input_add_note_admission">
+			<label for="state">Состояние</label>
+			<input type="text" id="state" name="state" class="input_add_note_admission" required>
+			<label for="discharge_planned_date">Планируемая дата выписки</label>
+			<input type="date" id="discharge_planned_date" name="discharge_planned_date"
+				pattern="(\d{4}-\d{2}-\d{2})|^$" class="input_add_note_admission">
+			<label for="source">Источник</label>
+			<select id="source" name="source" class="input_add_note_admission">
+				{% for option in admission_source_options%}
+				<option value="{{option.0}}">{{option.1}}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="modal-footer"><button class="fluid ui button"
+				onclick="document.getElementById('admission-modal-id').style.display='block'">Сохранить</button><br>
+			<button type="button" onclick="document.getElementById('admission-modal-id').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+
+<!-- End modal windows -->
+<script>
+	var ward_id;
+	function Open_edit_ward(ward){
+		ward_id = ward
+		event.preventDefault();
+		document.getElementById('ward-modal-edit').style.display = "block";
+
+		urls = "/ward/" + ward + "/";
+		$.ajax({
+				type: 'GET',
+				url: urls,
+				dataType: 'JSON',
+				success: function (data) {
+					$('#ward_edit_number').val(data.number);
+					$('#ward_edit_description').val(data.description);
+					$('#ward_edit_type').val(data.type);
+					
+				},
+				error: function (jqXHR, text, error) {
+				}
+			});
+	}
+
+	function Did_Edit_ward(){
+		var ward = $('#ward_edit_number').val()
+		var des = $('#ward_edit_description').val()
+		var type =  $('#ward_edit_type').val()
+		var dataString = '&ward_edit_number=' + ward+'&ward_edit_description=' + des + '&ward_edit_type='+type;
+		var urls = "/ward/update/" + ward_id + "/";
+
+		console.log(ward,des,type);
+		$.ajax({
+			type: "GET", // метод
+			url: urls,
+			data: dataString,
+			cache: false,	
+			dataType: 'json',
+			success: function (response) {
+			},error: function (jqXHR, text, error) {
+			}
+		});
+
+	}
+</script>
+
+<script>
+	function get_adress_from_coord(lat,lon){
+    urls = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon + "&zoom=18&addressdetails=1"
+    $.ajax({
+            type: 'GET',
+            url: urls,
+            dataType: 'JSON',
+            success: function (data) {	
+                address = data.address.road + " " + data.address.house_number
+                $('#address').val(address);
+            },
+            error: function (jqXHR, text, error) {
+            }
+        });
+}
+
+/* Перевод адреса в координаты
+function get_coord_from_address(address){
+    urls = "https://nominatim.openstreetmap.org/?format=json&q=" + address + "&zoom=18&addressdetails=1"
+    $.ajax({
+            type: 'GET',
+            url: urls,
+            dataType: 'JSON',
+            success: function (data) {	
+                console.log(data)
+            },
+            error: function (jqXHR, text, error) {
+            }
+        });
+}
+*/
+</script>
+
+<script>
+	$(function () {
+		$('#edit_profile').on('click',function () {
+			urls = "/get/profile/{{polyclinic_info.id}}/",
+			$.ajax({
+				type: 'GET',
+				url: urls,
+				async: true,
+				dataType: 'JSON',
+				success: function (data) {
+					$('#institution_name').val(data.name);
+					$('#email').val(data.email);
+					$('#city').val(data.town);
+					get_adress_from_coord(data.lat, data.lon);
+					$('#contact_data').val(data.contact);
+					
+				},
+				error: function (jqXHR, text, error) {
+				}
+			});
+		});
+	})
+</script>
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/tabs.js' %}"></script>
+<script>
+	function show() {
+		$.ajax({
+			url: "{% url 'get_list_detached_addresses' polyclinic_info.id %}",
+			dataType: 'json',
+			success: function (response) {
+				var data_mess = '';
+				var list = []
+				for (i in response) {
+					list[i] = [{ 'street': response[i].street, 'building': response[i].building, 'id': response[i].id, 'polyclinic': response[i].polyclinic }]
+				}
+				for (i in list) {
+					for (t of list[i]) {
+						var matches = t.polyclinic.match(/\b(\w)/g);
+						var polyclinic = matches.join('');
+						data_mess += '<dd><input type="checkbox" id="chk_' + t.id + '" name="detached_addresses_list[]" value="' + t.id + '" /><label for="chk_' + t.id + '"> ул. ' + t.street + ', д. ' + t.building + '</label></dd>';
+					}
+				}
+				document.getElementById('list_address').innerHTML = data_mess;
+				data_mess = '';
+				for (i in list) {
+					for (t of list[i]) {
+						var matches = t.polyclinic.match(/\b(\w)/g);
+						var polyclinic = matches.join('');
+						data_mess += '<dd><input type="checkbox" id="ch_' + t.id + '" name="list[]" value="' + t.id + '" /><label for="ch_' + t.id + '"> ул. ' + t.street + ', д. ' + t.building + '</label></dd>';
+					}
+				}
+				document.getElementById('list_set_address').innerHTML = data_mess;
+			}
+		});
+	}
+
+	function list_address(zone_id) {
+		$.ajax({
+			url: "/get_list_attached_addresses/{{polyclinic_info.id}}/" + zone_id + "/",
+			dataType: 'json',
+			success: function (response) {
+				var data_mess = '';
+				var list = []
+				for (i in response) {
+					list[i] = [{ 'street': response[i].street, 'building': response[i].building, 'id': response[i].id, 'polyclinic': response[i].polyclinic }]
+				}
+				for (i in list) {
+					for (t of list[i]) {
+						var matches = t.polyclinic.match(/\b(\w)/g);
+						var polyclinic = matches.join('');
+						data_mess += '<dd><input type="checkbox" id="chk_' + t.id + '" name="delete_addresses_list[]" value="' + t.id + '" /><label for="chk_' + t.id + '"> ул. ' + t.street + ', д. ' + t.building + '</label></dd>';
+					}
+				}
+				document.getElementById('modal_attached_add').innerHTML = data_mess;
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		show();
+		// list_address();
+	});
+</script>
+
+
+
+
+<script>
+	$(function () {
+		$('.modal_add_address_zone_id').on('click', function () {
+			let str = $(this).parents('div');
+			console.log(str)
+			var inputs = str.children('span').html();
+			console.log(inputs)
+			let vars = $('.zone_id')[0];
+			console.log(vars)
+			$('.zone_id').attr('value', inputs);
+			$('#modal_add_address').css('display', 'block');
+		});
+		$(document).mouseup(function (e) { // событие клика по веб-документу
+			var div = $("#change_data"); // тут указываем ID элемента
+			if (!div.is(e.target) // если клик был не по нашему блоку
+				&& div.has(e.target).length === 0) { // и не по его дочерним элементам
+				div.css('display', 'none');// скрываем его
+			}
+		});
+	})
+
+
+	$(function () {
+		$('.address_zone_id').on('click', function () {
+			let str = $(this).parents('div');
+			var inputs = str.children('span').html();
+			console.log(inputs)
+			list_address(inputs);
+		});
+	})
+
+	$(function () {
+		$('#clear_inputs').on('click', function () {
+			let inputs = $('.edit_zone');
+			for (let i = 0; i < inputs.length; i++) {
+				inputs[i].checked = false;
+				console.log(inputs[i])
+			}
+		});
+	})
+
+	$(function () {
+		$('#chek_chekbox_zone').on('click', function () {
+			let str = $('.edit_zone');
+			list = []
+			for (let i = 0; i < str.length; i++) {
+				if (str[i].checked) {
+					let id = str[i].value;
+					list.push(id)
+				}
+			}
+			class_form = '.modal_edit_doctor'
+			let res = get_info_zone(list, class_form);
+		});
+	})
+</script>
+{% endblock %}

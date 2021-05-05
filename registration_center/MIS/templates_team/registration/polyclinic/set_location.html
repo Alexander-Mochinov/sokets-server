@@ -1,0 +1,50 @@
+{% extends 'base_template.html' %}
+{% load static %}
+
+{% block title %} Регистрация нового пользователя {% endblock %}
+
+
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+  <form action="." method="POST" enctype="Multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group" style="left: 20% !important;">
+
+      <h2 class="heading">Заполните поля ! </h2>
+
+      <div class="controls">
+        {{form.street}}
+        <label for="fio" class="active">Название Улицы :</label>
+      </div>
+      <div class="controls">
+        {{form.zone}}
+        <label for="email" class="active">Участок:</label>
+      </div>
+      <div class="controls">
+        {{form.building}}
+        <label for="contact" class="active">Дом № : </label>
+      </div>
+
+      <div class="controls">
+        {{form.subdivision_polyclinics}}
+        <label for="contact" class="active">Подразделение поликлиники: </label>
+      </div>
+
+      <div class="controls">
+        <select name="" id="" disabled>
+          <option selected>{{polyclinic_info}}</option>
+        </select>
+        <label for="contact" class="active">Поликлиника: </label>
+      </div>
+    </div>
+    <div class="form-group" style="left: 22% !important;">
+      <div class="controls">
+        <button type="submit" onclick="setTimeout('window.close();',20)">Добавить</button>
+
+      </div>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

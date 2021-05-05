@@ -1,0 +1,85 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} {{polyclinic_info}} {% endblock %}
+{% load chek_writer_extras %}
+{% block script %}
+<!-- <script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script> -->
+{% endblock %}
+{% block content %}
+<div id="maincontent" class="ui main container">
+	<div class="ui grid">
+		<div class="column" style="margin-top: 30px;">
+			<div class="six wide field">
+				<form action="." method="POST" enctype="Multipart/form-data">
+					<h3>{{mess}}</h3>
+					<h4>Загрузить список адресов</h4>
+
+					<div class="wrapper">
+						<div class="file-upload">
+							{{form.document_address}}
+							<i class="fa fa-arrow-up" style="font-size: 15px;"></i>
+						</div>
+					</div>
+
+					{% csrf_token %}
+					<button type="submit" class="ui button" id="1"
+						onclick="JavaScript:return Validator(this.id);">Загрузить</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="ui grid">
+		<div class="column" style="margin-top: 30px;">
+			<div class="six wide field">
+				{% if pacient_list %}
+				<div class="ui container-fluid" style="padding: 35px;">
+					<table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+						<thead style="font-size: 11px;">
+							<tr>
+								<th>№</th>
+								<th width="90">Ф.И.О.</th>
+								<th>id addres</th>
+								<th width="90">Дата рождения</th>
+								<th width="90">Aдрес проживания</th>
+								<th>Контактный номер телефона</th>
+								<th onclick="sortTable(0)">Поликлиника</th>
+								<th id='dateCol' style='cursor:pointer;'>Время записи</th>
+								<th>Жалобы</th>
+								<th>Оператор</th>
+							</tr>
+						</thead>
+
+						<tbody style="font-size: 11px;    ">
+							{% if pacient_list %}
+							{% for count, person in pacient_list %}
+							<tr
+								style="padding: 0px; {% if person.address_fk %}{% else %}background: rgb(255 2 2 / 8%)!important;{% endif %}">
+								<td>{{count}}</td>
+								<td>{{person.fio}}</td>
+								<td>{{person.address_fk}}</td>
+								<td>{{person.date_of_birth}}</td>
+								<td>
+									{{person.address}}
+								</td>
+								<td>{{person.phone}}</td>
+								<td>{{person.polyclinic}}</td>
+								<td>{{person.recording_time|date:"Y-m-d G:i"}}</td>
+								<td>{{person.reason_for_calling}}</td>
+								<td>{% if person.operator  %}{{person.operator}}{% else %} ----- {% endif %}</td>
+							</tr>
+							{% endfor %}
+							{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

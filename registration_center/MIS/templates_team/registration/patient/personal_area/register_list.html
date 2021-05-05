@@ -1,0 +1,49 @@
+{% extends './generate_tmp.html' %}
+{% load static %}
+{% block title %} Личная карта пациента {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}
+
+	<div class="ui container-fluid" >
+        <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+            <thead style="font-size: 11px; text-align: center;">
+                <tr>
+                    <th width="5" >№</th>
+                    <th width="20">Время записи</th>
+                    <th width="200">Жалобы</th>
+                    <th width="60">Доктор</th>
+                    <th width="10">Статус</th>
+                </tr>
+            </thead>
+            <tbody style="font-size: 11px; text-align: center;">
+                {% if calls %}
+                {% for count, call in calls %}
+                <tr>
+                    <td>{{count}}</td>
+                    <td>{{call.recording_time|date:"Y-m-d G:i"}}</td>
+                    <td>{{call.reason_for_calling}}</td>
+                    <td>{% if call.doctor %}{{call.doctor.fio}}{% endif %}</td>
+                    <td style="text-align: center;">
+                        {% if call.close_call %}
+                        <img src="{% static 'img/check.svg' %}" alt="" style="width: 10% !important">
+                        {% else %}
+                        <img src="{% static 'img/ban.svg' %}" alt="" style="width: 10% !important">
+                        {% endif %}
+                    </td>
+					<!-- <td>{% if call.time_close_call %}{{call.time_close_call}}{% endif %}</td> -->
+                </tr>
+                {% endfor %}
+
+                {% else %}
+                <tr>
+                    <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

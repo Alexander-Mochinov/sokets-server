@@ -1,0 +1,404 @@
+{% extends 'base_template.html' %}
+{% load static %}
+
+{% load chek_writer_extras %}
+{% block title %} По запросу {% endblock %}
+
+{% block content %}
+<div id="modal_edit" class="modal">
+
+    <form class="modal-content animate" method="POST" id="change_data_form">
+        {% csrf_token %}
+        <div class="container">
+            <label for="psw"><b>Причина отмены вызова:</b></label>
+            <textarea cols="30" rows="10" name="reason_for_renouncement" class="input_add_note"></textarea>
+            <button class="fluid ui button"
+                onclick="document.getElementById('modal_edit').style.display='block'">Отменить вызов</button>
+        </div>
+
+        <div class="container" style="background-color:#f1f1f1">
+            <button type="button" onclick="document.getElementById('modal_edit').style.display='none'"
+                class="fluid ui button">Отмена</button>
+        </div>
+    </form>
+</div>
+<div id="maincontent" class="ui main container-fluid">
+    <div class="ui main container">
+        <div class="main-title">
+            {% if messages %}
+            {% for message in messages %}
+            <h4>{{ message }}</h4>
+            {% endfor %}
+            {% endif %}
+            <form method="GET" action="{% url 'DateSearchFilter' %}" name="filter">
+                <label for="">Дата: </label><br>
+                <label for=""> <b>C</b></label>
+                <input type="date" name="date_to" id="search" value="{{date_to}}">
+                <label for=""> <b>По</b> </label>
+                <input type="date" name="date" id="search"
+                    value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}"><br><br>
+                <label for="">Время:</label><br>
+                <label for=""> <b>C</b></label>
+                <input type="time" name='time_from' value="{{time_from_search}}">
+                <label for=""> <b>По</b> </label>
+                <input type="time" name='time_to' value="{{time_to_search}}"><br><br>
+                <label for="">Мед. учреждение</label><br>
+                <select name="select_polyclinic">
+                    <option value="">-----</option>
+                    {% for i in option_data %}
+                    <option value="{{i.id}}">{{i}}</option>
+                    {% endfor %}
+                </select><br><br>
+                <div id="selection">
+                    <label for="">Лечащий врач</label><br>
+                    <select name="select_a_doctor" id='select_a_doctor'>
+                        <option value="">-----</option>
+                    </select><br><br>
+                </div>
+                <button type="submit">
+                    Найти запись
+                </button>
+            </form>
+
+        </div>
+    </div>
+    <div class="ui stackable grid">
+        <div class="twenty wide column" style="align-items: center;
+        position: relative;
+        display: grid;
+        text-align: center;">
+            <div class="main-title">
+                <h3>По заданному запросу ... </h3>
+            </div>
+            <style>
+                th,
+                td {
+                    padding: 0px;
+                }
+            </style>
+
+
+        </div>
+    </div>
+    <div class="ui container-fluid" style="padding: 35px;">
+        <table class="ui small very compact unstackable selectable olive table" id="myTable_two">
+            <thead style="font-size: 11px;">
+                <tr style="padding: 0px;">
+                    <th>№</th>
+                    <th>Ф.И.О.</th>
+                    <th>Дата рождения</th>
+                    <th>Aдрес проживания</th>
+                    <th>Контактный номер телефона</th>
+                    <th onclick="sortTable(0)">Поликлиника</th>
+                    <th id='dateCol' style='cursor:pointer;'>Время записи</th>
+                    <th>Жалобы</th>
+                    <th style="width: 100px;">Тип вызова</th>
+                    <th>Доктор</th>
+                    <th>Оператор</th>
+                    <th style="text-align: center;">Вызов передан</th>
+                    <th>Вызов отработан</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody style="font-size: 11px; ">
+                {% if patient_registration_list %}
+                {% for index, person in patient_registration_list %}
+
+                <tr style=" padding: 0px;">
+                    <td>{{index}}</td>
+                    <td>{{person.fio}}</td>
+                    <td>{{person.date_of_birth}}</td>
+                    <td>
+                        {{person.address}} кв.{{person.flat}}, <br>этаж: {{person.floor}}, п.
+                        {{person.entrance}}<br>код домофона:{{person.intercom_code}}
+                    </td>
+                    <td>{{person.phone}}</td>
+                    <td>{{person.polyclinic}}</td>
+                    <td>{{person.recording_time|date:"Y-m-d G:i"}}</td>
+                    <td>{{person.reason_for_calling}}</td>
+                    <td>
+                        {% if person.call_cancellation %}
+                        <a href="">
+                            <label for="renouncement_{{person.id}}"
+                                onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+                                Отказ</label>
+                        </a>
+                        {% else %}
+                        <input type="radio" class="radio_button" disabled name="c" id="c0" checked="checked" />
+                        <label for="c0" {% if person.type_call  %}style="background: #2ecc71;" {% else %}
+                            style="background: #ea0626b5" {% endif %}></label><br>
+                        {% for i in type_call %}
+                        <label><input id="person_{{person.id}}_{{i.id}}" name="type_call" type="checkbox"
+                                {% if person.type_call.id == i.id %} checked {% endif %} name="group{{person.id}}[]"
+                                value="{{i.id}}" onclick="cheked_box('person_{{person.id}}_{{i.id}}','{{person.id}}')">
+                            {{i}}</label> <br>
+
+                        {% endfor %}
+                        <input type="checkbox" name="group{{person.id}}[]" id="renouncement_{{person.id}}"
+                            onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+                        <label for="renouncement_{{person.id}}"
+                            onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+                            Отказ</label>
+                        {% endif %}
+
+                    </td>
+                    <td>{% if person.doctor %}{{person.doctor}}{% endif %}</td>
+                    <td>{% if person.operator  %}{{person.operator}}{% else %} ----- {% endif %}</td>
+                    <td style="text-align: center;">
+                        {% if person.сall_transferred %}
+                        <a href="{% url 'cheked_write' person.id %}"><img src="{% static 'img/check.svg' %}" alt=""
+                                style="width: 35% !important"></a>
+                        {% else %}
+                        <a href="{% url 'cheked_write' person.id %}"><img src="{% static 'img/ban.svg' %}" alt=""
+                                style="width: 35% !important"></a>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if person.close_call %}
+                        <img src="{% static 'img/check.svg' %}" alt="" style="width: 35% !important">
+                        {% else %}
+                        <img src="{% static 'img/ban.svg' %}" alt="" style="width: 35% !important">
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'Patient_registration_update' person.pk %}"><img
+                                src="{% static 'img/set.png' %}" alt="" style="width: 18px;"></a></td>
+                    <!-- <td><a href="{% url 'Patient_registration_delete' person.pk %}" >Удалить</a></td> -->
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% if patient_registration_list %}<br>
+    {% if option_data_id  %}
+    <form action="{% url 'download_file'  option_data_id %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="date_to" id="search" value="{{date_to}}">
+        <input type="hidden" name="date_h" id="search"
+            value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}">
+        <input type="hidden" name='time_from_h' value="{{time_from_search}}">
+        <input type="hidden" name='time_to_h' value="{{time_to_search}}">
+        <input type="hidden" name='select_a_doctor' value="{% if select_a_doctor %}{{select_a_doctor}}{% endif %}">
+
+        <button>Скачать данные</button>
+    </form>
+    {% else %}
+    <div class="">
+        <p>Чтобы скачать данные по фильтру , примените его !</p>
+        <button><a href="{% url 'download_all' %}">Скачать весь список</a></button><br><br><br><br>
+    </div>
+    {% endif %}
+    {% endif %}
+
+</div>
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $('#dateCol').click(function () {
+            sortTable_Date(6);
+        });
+    });
+
+</script>
+{% if autoupdate %}
+<script>
+    setTimeout(function () {
+        window.location.reload(1);
+    }, 20000);
+</script>
+{% endif %}
+<script>
+    function GetJson(id) {
+        $.ajax({
+            url: "/filter/" + String(id) + "/",
+            dataType: 'json',
+            success: function (response) {
+                var data = data;
+                var list = []
+                var data_mess = '';
+                for (i in response) {
+                    list[i] = [{ 'id': response[i].id, 'fio': response[i].fio, 'zone': response[i].zone }]
+                }
+                var opts = '<option value="">-----</option>';
+                for (i in list) {
+                    for (t of list[i]) {
+                        opts += '<option value="' + t.id + '">' + t.fio + '</option>';
+                    }
+                }
+                document.getElementById('select_a_doctor').innerHTML = opts;
+
+            }
+        });
+    }
+
+    var languagesSelect = filter.select_polyclinic;
+    function changeOption() {
+
+        var selection = document.getElementById("select_a_doctor");
+        var selectedOption = languagesSelect.options[languagesSelect.selectedIndex];
+        GetJson(selectedOption.value)
+    }
+    languagesSelect.addEventListener("change", changeOption);
+
+</script>
+<script>
+
+    function cancell_call(id_button, id_pacient) {
+        var buttonValue = document.getElementById(id_button)
+        if (buttonValue.checked) {
+        }
+        else {
+
+            document.getElementById('modal_edit').style.display = 'block'
+            let url_update = '/cancell-call/' + id_pacient + '/';
+            $('#modal_edit').css('display', 'block');
+            $('#change_data_form').attr('action', url_update);
+        }
+
+        $(document).mouseup(function (e) { // событие клика по веб-документу
+            var div = $("#change_data"); // тут указываем ID элемента
+            if (!div.is(e.target) // если клик был не по нашему блоку
+                && div.has(e.target).length === 0) { // и не по его дочерним элементам
+                div.css('display', 'none');// скрываем его
+                buttonValue.checked = false;
+            }
+        });
+
+    }
+    function cheked_box(id_box, id_pacient) {
+        var buttonValue = document.getElementById(id_box);
+        if (buttonValue.checked) {
+            url = '/set-type-call/' + id_pacient + '/' + buttonValue.value + '/';
+            window.location.href = url
+        } else {
+            url = '/set-type-call/' + id_pacient + '/0/';
+            window.location.href = url
+        }
+    }
+</script>
+<script>
+    $('input[type="checkbox"]').on('change', function () {
+        let str = $(this).parents('td');
+        if (input.checked) {
+            $('input[name="' + this.name + '"]').prop('checked', false);
+        }
+        else {
+            $('input[name="' + this.name + '"]').not(this).prop('checked', false);
+        }
+        // $('input[name="' + this.name + '"]').not(this).prop('checked', false);
+    });
+</script>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 999999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto 15% auto;
+        border: 1px solid #888;
+        width: 50%;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    span.psw {
+        float: right;
+        padding-top: 16px;
+    }
+
+    .close {
+        position: absolute;
+        right: 25px;
+        top: 0;
+        color: #000;
+        font-size: 35px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: red;
+        cursor: pointer;
+    }
+
+    .animate {
+        -webkit-animation: animatezoom 0.6s;
+        animation: animatezoom 0.6s
+    }
+
+    span.psw {
+        float: right;
+        padding-top: 16px;
+    }
+
+
+    .input_add_note {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+
+
+
+
+    .radio_button+label {
+        display: inline-block;
+        position: relative;
+        margin: 0 4px;
+        border: 2px solid #fff;
+        width: 1.8em;
+        height: 1.8em;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.33);
+        color: transparent;
+        cursor: pointer;
+
+        margin-left: 25px;
+    }
+
+
+    .radio_button+label:before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        opacity: 0;
+        background: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/2017/check-icn.svg") 50%/50% no-repeat;
+        transition: all .3s ease;
+        content: '';
+    }
+
+    .radio_button:checked+label:before {
+        opacity: 1;
+    }
+
+    .radio_button {
+        position: absolute;
+        right: 100vw;
+    }
+</style>
+{% endblock %}

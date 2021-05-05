@@ -1,0 +1,464 @@
+{% extends './generate_tmp.html' %}
+{% load static %}
+{% load tags %}
+{% block title %} ЧСС {% endblock %}
+{% block content_sub %}
+
+<div class="ui stackable grid" style="margin-top: 5px">
+	<div class="twenty wide column">
+		<div class="ui stackable grid">
+			<div class="seven wide column">
+				<form method="GET" action="{% url 'heart_rate' %}" name="filter">
+					<label for="">Дата: </label><br>
+					<label for=""> <b>C</b></label>
+					<input type="date" name="date_to"  value="{% if date_now %}{{date_now}}{% else %}{{datetime}}{% endif %}"><br><br>
+					<label for=""> <b>По</b> </label>
+					<input type="date" name="date"  value="{% if date %}{{date}}{% else %}{{datetime}}{% endif %}"><br><br>
+					<label for="">Время:</label><br>
+					<label for=""> <b>C</b></label>
+					<input type="time" name='time_from' value="{% if time_from_search %}{{time_from_search}}{% endif %}">
+					<label for=""> <b>По</b> </label>
+					<input type="time" name='time_to' value="{% if time_to_search %}{{time_to_search}} {% endif %}"><br><br>
+					<button type="submit" class="ui button">
+						Поиск
+					</button>
+				</form>
+			</div>
+			<div class="seven wide column">
+				<h4>Введите границы критических показателей</h4>
+				<table class="ui table">
+					<tbody>
+						<tr >
+							<td class="collapsing" width="80">
+								Мин. значение
+							</td>
+							<td><input type="number" id="pulse_min" min="0" maxlength="3" value="{{current_pacient.pulse_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+						</tr>
+						<tr>
+							<td width="80">
+								Макс. значение
+							</td>
+							<td><input type="number" id="pulse_max" min="0" value="{{current_pacient.pulse_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+						</tr>
+					</tbody>
+				</table>
+				<button class="ui button" id="parameters" style="float: right;">Сохранить</button>
+			</div>
+			<div class="seven wide column">
+				<div class="checkboxex">
+					<div class="text_filter">Фильтр для графика:</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="crit_check" name="crit_check" onchange="schedule();" checked>
+			 			<label for="crit_check">Границы критических показателей</label>
+					</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="zone_check" name="zone_check" onchange="schedule()">
+			 			<label for="zone_check">Границы зоны риска</label>
+					</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="ma_check" name="ma_check" onchange="schedule()">
+			 			<label for="ma_check">Скользящая средняя</label>
+					</div>	
+					<div class="item_checkbox">
+						<input type="checkbox" id="trand_check" name="trand_check" onchange="schedule()">
+			 			<label for="trand_check">Границы развития тенденции</label>
+					</div>
+				</div>
+			</div>
+			<div class="seven wide column">
+				<h4>Введите границы зоны риска</h4>
+				<table class="ui table">
+					<tbody>
+						<tr >
+							<td class="collapsing" width="80">
+								Мин. значение
+							</td>
+							<td><input type="number" id="pulse_zone_min" min="0" maxlength="3" value="{{current_pacient.pulse_zone_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+						</tr>
+						<tr>
+							<td width="80">
+								Макс. значение
+							</td>
+							<td><input type="number" id="pulse_zone_max" min="0" value="{{current_pacient.pulse_zone_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+						</tr>
+					</tbody>
+				</table>
+				<button class="ui button" id="parameters_zone" style="float: right;">Сохранить</button>
+			</div>
+			<div class="seven wide column"></div>
+			<div class="seven wide column">
+				<h4>Введите границы развития тенденции</h4>
+				<table class="ui table">
+					<tbody>
+						<tr >
+							<td class="collapsing" width="80">
+								Мин. значение
+							</td>
+							<td><input type="number" id="pulse_trand_min" min="0" maxlength="3" value="{{current_pacient.pulse_trand_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+						</tr>
+						<tr>
+							<td width="80">
+								Макс. значение
+							</td>
+							<td><input type="number" id="pulse_trand_max" min="0" value="{{current_pacient.pulse_trand_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+						</tr>
+					</tbody>
+				</table>
+				<button class="ui button" id="parameters_trand" style="float: right;">Сохранить</button>
+			</div>
+		</div>
+
+		<div class="seven wide column"></div>
+
+
+		<div class="column" style="margin-top: 30px;">
+			<div class="tabs" style="margin-bottom: 30px;">
+			<input type="radio" name="tab-btn" id="tab-btn-1" value="" data-toggle="tab" checked>
+			<label for="tab-btn-1">Список</label>
+			<input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+			<label for="tab-btn-2">График</label>
+
+			<div id="content-1">
+				<table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+					<thead style="font-size: 11px; text-align: center;">
+						<tr>
+							<th width="5" >№</th>
+							<th width="20">Пульс</th>
+							<th width="80">Дата измерения</th>
+							<th width="200">Название устройства</th>
+						</tr>
+					</thead>
+					<tbody style="font-size: 11px; text-align: center;">
+						{% if devices %}
+						{% for count, device in devices %}
+						<tr>
+							<td>{{count}}</td>
+							<td>{{device.HR}}</td>
+							<td>{{device.get_time}}</td>
+							<td>{{device.android_mac.mac_adress}}</td>
+						{% endfor %}
+
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+			<div id="content-2">
+				<canvas id="speedChart" width="450" height="150"></canvas>
+			</div>
+			<!-- <div id="content-3">
+			</div> -->
+			</div>
+		</div>
+	</div>
+</div>
+<style scoped>
+	@media screen and (max-width: 767px){
+		.ui.table:not(.unstackable) tbody, .ui.table:not(.unstackable) tr, .ui.table:not(.unstackable) tr>td, .ui.table:not(.unstackable) tr>th {	
+			width: calc(100%) !important;
+			display: inline-flex !important;
+			flex-direction: column;
+		}
+	}
+</style>
+<script src="{% static 'js/tabs.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script src="{% static 'js/show_data_in_graph.js' %}"></script>
+<script>
+var lineChart;
+var speedCanvas = document.getElementById("speedChart");
+let data_pulse = {
+		data : {{data_HR_for_graph|safe}},
+		name : "Пульс",
+        min : {{current_pacient.pulse_min}},
+        max :  {{current_pacient.pulse_max}},
+        zone_min : {{current_pacient.pulse_zone_min}},
+        zone_max : {{current_pacient.pulse_zone_max}},
+		trand_min : {{current_pacient.pulse_trand_min}},
+        trand_max : {{current_pacient.pulse_trand_max}},
+		ma : {{data_MA_for_graph|safe}},
+        data_time : [{{data_time_for_graph|safe}}],
+		speedCanvas : speedCanvas
+	}
+let pulse_graph = new Show_data(data_pulse)
+document.addEventListener("DOMContentLoaded", () => {
+
+	lineChart = pulse_graph.show(true)
+	
+	// var speedCanvas = document.getElementById("speedChart");
+
+	// Chart.defaults.global.defaultFontFamily = "Lato";
+	// Chart.defaults.global.defaultFontSize = 18;
+
+	// var dataFirst = {
+	// 	label: "Пульс",
+	// 	data:  {{data_HR_for_graph|safe}},
+	// 	lineTension:0,
+	// 	fill: true,
+	// 	borderColor: 'blue',
+	// };
+
+
+	// var dataSecond = {
+	// 	label: "min",
+	// 	data: [{% for i in data_HR_for_graph %}{{current_pacient.pulse_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: true,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var dataTherd = {
+	// 	label: "max",
+	// 	data: [{% for i in data_HR_for_graph %} {{current_pacient.pulse_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataFourth = {
+	// 	label: "zone_min",
+	// 	data: [{% for i in data_HR_for_graph %}{{current_pacient.pulse_zone_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: true,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataFif = {
+	// 	label: "zone_max",
+	// 	data: [{% for i in data_HR_for_graph %} {{current_pacient.pulse_zone_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+
+	// var speedData = {
+	// 	labels: [{{data_time_for_graph|safe}}],
+	// 	datasets: [dataFirst,dataSecond,dataTherd]
+	// };
+
+
+
+	// var chartOptions = {
+	// legend: {
+	// 	display: false,
+	// 	position: 'top',
+	// 	labels: {
+	// 	boxWidth: 0,
+	// 	fontColor: 'black'
+	// 	}
+	// }
+	// };
+
+	// lineChart = new Chart(speedCanvas, {
+	// type: 'line',
+	// data: speedData,
+	// options: chartOptions
+	// });
+});
+
+function schedule(){
+	var crit_check = document.getElementById('crit_check').checked;
+	var zone_check = document.getElementById('zone_check').checked;
+	var ma_check = document.getElementById('ma_check').checked;
+	var trand_check = document.getElementById('trand_check').checked;
+
+	lineChart.destroy()
+	lineChart = pulse_graph.show(crit_check, zone_check, ma_check, trand_check)
+
+	// Chart.defaults.global.defaultFontFamily = "Lato";
+	// Chart.defaults.global.defaultFontSize = 18;
+
+	// var dataFirst = {
+	// 	label: "Пульс",
+	// 	data:  {{data_HR_for_graph|safe}},
+	// 	lineTension:0,
+	// 	fill: true,
+	// 	borderColor: 'blue',
+	// };
+
+
+	// var dataSecond = {
+	// 	label: "min",
+	// 	data: [{% for i in data_HR_for_graph %}{{current_pacient.pulse_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var dataTherd = {
+	// 	label: "max",
+	// 	data: [{% for i in data_HR_for_graph %} {{current_pacient.pulse_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataFourth = {
+	// 	label: "zone_min",
+	// 	data: [{% for i in data_HR_for_graph %}{{current_pacient.pulse_zone_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataFif = {
+	// 	label: "zone_max",
+	// 	data: [{% for i in data_HR_for_graph %} {{current_pacient.pulse_zone_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataSixth = {
+	// 	label: "MA",
+	// 	data: {{data_MA_for_graph|safe}},
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'yellow',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataSeventh = {
+	// 	label: "trand_min",
+	// 	data: [{% for i in data_HR_for_graph %} {{current_pacient.pulse_trand_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var dataEighth = {
+	// 	label: "trand_max",
+	// 	data: [{% for i in data_HR_for_graph %} {{current_pacient.pulse_trand_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var speedData;
+
+	// var chartOptions = {
+	// legend: {
+	// 	display: false,
+	// 	position: 'top',
+	// 	labels: {
+	// 	boxWidth: 0,
+	// 	fontColor: 'black'
+	// 	}
+	// }
+	// };
+
+	// arr_datasets = [dataFirst]
+	// //Границы критических показателей
+	// if(crit_check.checked){
+	// 	arr_datasets.push(dataSecond);
+	// 	arr_datasets.push(dataTherd);
+	// }
+
+	// //Границы зоны риска
+	// if(zone_check.checked){
+	// 	arr_datasets.push(dataFourth);
+	// 	arr_datasets.push(dataFif);
+	// }
+
+	// //Границы развития тенденции
+	// if(trand_check.checked){
+	// 	arr_datasets.push(dataSeventh);
+	// 	arr_datasets.push(dataEighth);
+	// }
+
+	// //Скользящая средняя
+	// if(ma_check.checked){
+	// 	arr_datasets.push(dataSixth);
+	// }
+
+	// speedData = {
+	// 		labels: [{{data_time_for_graph|safe}}],
+	// 		datasets: arr_datasets
+	// };
+
+	// lineChart.destroy();
+	// lineChart = new Chart(speedCanvas, {
+	// type: 'line',
+	// data: speedData,
+	// options: chartOptions
+	// });
+
+}
+</script>
+
+<script>
+setTimeout(function(){
+   window.location.reload(1);
+}, 50000);
+$('.menu .item').tab();
+
+$('#parameters').on('click', function(){
+	let pulse_max = $('#pulse_max').val();
+	let pulse_min = $('#pulse_min').val();
+	console.log(pulse_max)
+	console.log(pulse_min)
+	let urls = '/set-params-pulse/{{current_pacient.id}}/?pulse_max=' + pulse_max + '&pulse_min=' + pulse_min
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_trand').on('click', function(){
+	let trand_pulse_max = $('#pulse_trand_max').val();
+	let trand_pulse_min = $('#pulse_trand_min').val();
+	console.log(trand_pulse_max)
+	console.log(trand_pulse_min)
+	let urls = '/set-params-trand-pulse/{{current_pacient.id}}/?trand_pulse_max=' + trand_pulse_max + '&trand_pulse_min=' + trand_pulse_min
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_zone').on('click', function(){
+	let pulse_zone_max = $('#pulse_zone_max').val();
+	let pulse_zone_min = $('#pulse_zone_min').val();
+	console.log(pulse_zone_max)
+	console.log(pulse_zone_min)
+	let urls = '/set-params-zone-pulse/{{current_pacient.id}}/?pulse_zone_max=' + pulse_zone_max + '&pulse_zone_min=' + pulse_zone_min
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+</script>
+
+{% endblock %}

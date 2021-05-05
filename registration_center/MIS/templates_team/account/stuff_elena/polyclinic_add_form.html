@@ -1,0 +1,47 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %}Добавление записи{% endblock %}
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+  <div class="six wide column">
+    <img src="{% static 'img/write.png' %}" alt="" style="    
+        width: 10%;
+    position: absolute;
+    left: 68%;
+    right: 20%;
+    top: 54%;">
+  </div>
+  <div class="six wide column">
+    <form action="." method="post" enctype="Multipart/form-data" id="FormaAjax">
+      {% csrf_token %}
+      <div class="form-group">
+        <h2 class="heading" style="    text-align: left;">Добавить запись: </h2>
+        <div class="controls">
+          {{form.name}}
+          <label for="fio" class="active">Название учреждения :</label>
+        </div>
+        <div class="controls">
+          {{form.town}}
+          <label for="email" class="active">Город:</label>
+        </div>
+        <div class="controls">
+          {{form.email}}
+          <label for="email" class="active">Эл. адрес:</label>
+        </div>
+        <!-- <div class="controls">
+          {{form.contact}}
+          <label for="contact" class="active">Контактные данные: </label>
+        </div> -->
+      </div>
+      {% if None_is_param == False %}
+      <a href="javascript://" onclick="history.back();return false;"><button>Назад</button></a>
+      {% endif %}
+      <div class="form-group">
+        <div class="controls">
+          <button>Добавить</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  {% endblock %}

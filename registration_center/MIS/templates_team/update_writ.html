@@ -1,0 +1,52 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block content %}
+
+
+<div id="maincontent" class="ui main container">
+
+    <form action="" method="POST">
+        <select name="polycy" id="">
+            <option value=""></option>
+            {% for i in polyclinic_data %}
+            <option value="{{i.id}}">{{i}}</option>
+            {% endfor %}
+        </select>
+        <select name="branch" id="">
+            <option value=""></option>
+            {% for i in branch %}
+            <option value="{{i.0}}">{{i.0}}</option>
+            {% endfor %}
+        </select>
+
+        {% csrf_token %}
+        <button type="submit">Установить</button>
+    </form>
+    {{mess}}
+    {% if data %}
+    <ul>
+        {% for i in data %}
+        <li>{{i.location}} -- {{i.location.subdivision_polyclinics.branch}} --- {{i.location.subdivision_polyclinics}}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form action="" method="GET">
+        {% csrf_token %}
+        {{ forms}}
+        <input type="submit" />
+    </form>
+</div>
+
+
+
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+{{ forms.media }}
+
+
+
+
+
+
+{% endblock %}

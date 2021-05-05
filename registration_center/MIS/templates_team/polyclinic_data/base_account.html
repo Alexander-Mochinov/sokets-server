@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load chek_writer_extras %}
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="{% static 'css/sinematic.min.css' %}">
+	<script src="{% static 'js/jq2.js' %}"></script>
+	{% block script %}{% endblock %}
+	<title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+	<nav role='navigation' id="main_nav">
+    <img src="{% static 'img/logo.png' %}" alt="" style="padding-top: 12px;
+    max-width: 222px;
+    min-width: 180px;
+    width: 20%;
+    float: left;">
+    {% check_perm request.user 'Stuff polyclinic' as check_perm_SP_flag %}
+    {% if not check_perm_SP_flag %}
+		<ul style="width: auto;">
+			<li>
+				<a href="#">Мед. организация</a>
+				<ul class="m-auto">
+					<li>
+						{% if request.user|read_only_account %}
+							{{request.user|get_id_polyclinic_detail|safe}}
+						{% endif %}
+					</li>
+					<li>
+						{% if request.user|read_only_account %}
+							{{request.user|get_id_polyclinic_staff|safe}}
+						{% endif %}
+					</li>
+					<li>
+						{% if request.user|read_only_account %}
+							{{request.user|get_id_polyclinic_subdivisions|safe}}
+						{% endif %}
+                    </li>
+				</ul>
+			</li>
+			<li>
+				<a href="#">Пациенты</a>
+				<ul class="m-auto">
+					{% if request.user|read_only_account %}
+					{{request.user|get_id_polyclinic_attach|safe}}
+					{% endif %}
+          {% if request.user|read_only_account %}
+					{{request.user|get_id_polyclinic_critical_attach|safe}}
+					{% endif %}
+					{% if request.user|read_only_account %}
+					{{request.user|get_id_polyclinic_request_for_attach|safe}}
+					{% endif %}
+				</ul>
+			</li>
+			<li><a href="">Заявки</a>
+      <ul class="m-auto">
+          <li><a href="/views-self-data/">Вызов врача на дом</a></li>
+					{% if request.user|read_only_account %}
+					{{request.user|get_id_polyclinic|safe}}
+					{% endif %}
+          {% if request.user|read_only_account %}
+					{{request.user|get_id_polyclinic_for_complaints|safe}}
+					{% endif %}
+          <li><a href="#">Лист ожидания</a>
+            <ul class="m-auto">
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic|safe}}
+              {% endif %}
+            </ul>
+          </li>
+        </ul>
+			</li>
+			<li>
+				{% if request.user|read_only_account %}
+        {{request.user|list_ses|safe}}
+        {% endif %}
+			</li>
+			<li>
+				<a href="{% url 'tracking_info' %}">Tracking</a>
+			</li>
+            
+		</ul>
+    {% endif %}
+    <ul class="right-menu">
+        <li>
+            {% if request.user.is_authenticated  %}
+            <a href="{% url 'logout' %}" class="header item">Выйти</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="header item">Войти</a>
+            {% endif %}
+        </li>
+        <!-- <li><a href="#"></a></li> -->
+    </ul>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+	</nav>
+		<input type="hidden" value="{{ request.user|get_login }}" id='login_for_sip'>
+		<input type="hidden" value="{{ request.user|get_password }}" id='pass_for_sip'>
+		<div style="overflow-y: auto;height: 100vh;">
+      
+			{% block content %}
+			{% endblock %}
+		</div>
+
+       {% if request.user.is_authenticated and request.user|is_connected_phone %}
+        <div id="chat-circle" class="btn btn-raised" style="display: flex;">
+        <img src="{% static 'img/pho.png' %}" alt="" style="width: 30px;
+          height: 30px;">
+        </div>
+  
+		  {% endif %} 
+    <!-- WEB_PHONE THINGS
+    <script src="{% static 'fontawesome_free/js/all.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css"
+        href="https://dtd6jl0d42sve.cloudfront.net/lib/Normalize/normalize-v8.0.1.css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://dtd6jl0d42sve.cloudfront.net/lib/fonts/font_roboto/roboto.css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://dtd6jl0d42sve.cloudfront.net/lib/fonts/font_awesome/css/font-awesome.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="https://dtd6jl0d42sve.cloudfront.net/lib/dhtmlx/dhtmlx.css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://dtd6jl0d42sve.cloudfront.net/lib/Croppie/Croppie-2.6.4/croppie.css" />
+
+    <link rel="stylesheet" type="text/css" href="{% static 'web-phone/phone.css' %}" />
+
+
+    <script type="text/javascript">
+        var web_hook_on_transportError = function (t, ua) {
+            console.warn("web_hook_on_transportError", t, ua);
+        }
+        var web_hook_on_register = function (ua) {
+            console.warn("web_hook_on_register", ua);
+        }
+        var web_hook_on_registrationFailed = function (e) {
+            console.warn("web_hook_on_registrationFailed", e);
+        }
+        var web_hook_on_unregistered = function () {
+            console.warn("web_hook_on_unregistered");
+        }
+        var web_hook_on_invite = function (session) {
+            console.warn("web_hook_on_invite", session);
+        }
+        var web_hook_on_message = function (message) {
+            console.warn("web_hook_on_message", message);
+        }
+        var web_hook_on_modify = function (action, session) {
+            console.warn("web_hook_on_modify", action, session);
+        }
+        var web_hook_on_dtmf = function (item, session) {
+            console.warn("web_hook_on_dtmf", item, session);
+        }
+        var web_hook_on_terminate = function (session) {
+            console.warn("web_hook_on_terminate", session);
+        }
+    </script>
+
+    <script type="text/javascript" src="https://dtd6jl0d42sve.cloudfront.net/lib/jquery/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://dtd6jl0d42sve.cloudfront.net/lib/jquery/jquery.md5-min.js"></script>
+    <script type="text/javascript" src="https://dtd6jl0d42sve.cloudfront.net/lib/Chart/Chart.bundle-2.7.2.js"></script>
+    <script type="text/javascript" src="https://dtd6jl0d42sve.cloudfront.net/lib/dhtmlx/dhtmlx.js"></script>
+    <script type="text/javascript" src="{% static 'web-phone/sip-0.15.11.js' %}"></script>
+    <script type="text/javascript" src="https://dtd6jl0d42sve.cloudfront.net/lib/SipJS/sip-0.11.6.min.js"></script>-->
+    <!-- <script type="text/javascript" src="https://dtd6jl0d42sve.cloudfront.net/lib/FabricJS/fabric-2.4.6.min.js"></script>
+    <script type="text/javascript"
+        src="https://dtd6jl0d42sve.cloudfront.net/lib/Moment/moment-with-locales-2.24.0.min.js"></script>
+    <script type="text/javascript"
+        src="https://dtd6jl0d42sve.cloudfront.net/lib/Croppie/Croppie-2.6.4/croppie.min.js"></script>
+    <script type="text/javascript" src="{% static 'web-phone/phone.js' %}"></script> -->
+    <!-- WEB_PHONE THINGS END -->
+
+    <div class="menu">
+      <div id="burg_nav">
+        <ul style="width: auto;">
+          <li class="show_item">
+            <a href="#">Мед. организация</a>
+            <ul class="m-auto">
+              <li>
+                {% if request.user|read_only_account %}
+                  {{request.user|get_id_polyclinic_detail|safe}}
+                {% endif %}
+              </li>
+              <li>
+                {% if request.user|read_only_account %}
+                  {{request.user|get_id_polyclinic_staff|safe}}
+                {% endif %}
+              </li>
+              <li>
+                {% if request.user|read_only_account %}
+                  {{request.user|get_id_polyclinic_subdivisions|safe}}
+                {% endif %}
+                        </li>
+            </ul>
+          </li>
+          <li class="show_item">
+            <a href="#">Пациенты</a>
+            <ul class="m-auto">
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic_attach|safe}}
+              {% endif %}
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic_critical_attach|safe}}
+              {% endif %}
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic_request_for_attach|safe}}
+              {% endif %}
+            </ul>
+          </li>
+          <li class="show_item"><a href="">Заявки</a>
+          <ul class="m-auto">
+              <li><a href="/views-self-data/">Вызов врача на дом</a></li>
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic|safe}}
+              {% endif %}
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic_for_complaints|safe}}
+              {% endif %}
+              {% if request.user|read_only_account %}
+              {{request.user|get_id_polyclinic|safe}}
+              {% endif %}
+            </ul>
+          </li>
+          <li class="show_item">
+            {% if request.user|read_only_account %}
+            {{request.user|list_ses|safe}}
+            {% endif %}
+          </li>
+          <li class="show_item">
+            <a href="{% url 'tracking_info' %}">Tracking</a>
+          </li>
+                
+        </ul>
+        <ul class="right-menu">
+            <li>
+                {% if request.user.is_authenticated  %}
+                <a href="{% url 'logout' %}" class="header item">Выйти</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="header item">Войти</a>
+                {% endif %}
+            </li>
+            <!-- <li><a href="#"></a></li> -->
+        </ul>
+      <li class="show_item">
+        <a href="{% static 'apk/app-debug_main_api.apk' %}" download>Скачать приложение</a>
+      </li>
+      <div class="text_header" style="text-align: center;">
+        <span style="letter-spacing: 3px;">+7(846)307-77-07</span> 
+        <br>
+        Звоните, мы с радостью<br> ответим вам!
+      </div>
+    </div>
+<!-- 
+<script>
+  function open_ul(ul_id){
+    ul_el = document.getElementById(ul_id)
+    ul_el.style.display = ul_el.style.display === 'none' ? 'block' : 'none';
+  }
+</script> -->
+
+<script>
+$(function() {
+  var INDEX = 0; 
+  $("#chat-submit").click(function(e) {
+    e.preventDefault();
+    var msg = $("#chat-input").val(); 
+    if(msg.trim() == ''){
+      return false;
+    }
+    generate_message(msg, 'self');
+    var buttons = [
+        {
+          name: 'Existing User',
+          value: 'existing'
+        },
+        {
+          name: 'New User',
+          value: 'new'
+        }
+      ];
+    setTimeout(function() {      
+      generate_message(msg, 'user');  
+    }, 1000)
+    
+  })
+  
+  function generate_message(msg, type) {
+    INDEX++;
+    var str="";
+    str += "<div id='cm-msg-"+INDEX+"' class=\"chat-msg "+type+"\">";
+    str += "          <span class=\"msg-avatar\">";
+    str += "            <img src=\"https:\/\/image.crisp.im\/avatar\/operator\/196af8cc-f6ad-4ef7-afd1-c45d5231387c\/240\/?1483361727745\">";
+    str += "          <\/span>";
+    str += "          <div class=\"cm-msg-text\">";
+    str += msg;
+    str += "          <\/div>";
+    str += "        <\/div>";
+    $(".chat-logs").append(str);
+    $("#cm-msg-"+INDEX).hide().fadeIn(300);
+    if(type == 'self'){
+     $("#chat-input").val(''); 
+    }    
+    $(".chat-logs").stop().animate({ scrollTop: $(".chat-logs")[0].scrollHeight}, 1000);    
+  }  
+  
+  function generate_button_message(msg, buttons){    
+    /* Buttons should be object array 
+      [
+        {
+          name: 'Existing User',
+          value: 'existing'
+        },
+        {
+          name: 'New User',
+          value: 'new'
+        }
+      ]
+    */
+    INDEX++;
+    var btn_obj = buttons.map(function(button) {
+       return  "              <li class=\"button\"><a href=\"javascript:;\" class=\"btn btn-primary chat-btn\" chat-value=\""+button.value+"\">"+button.name+"<\/a><\/li>";
+    }).join('');
+    var str="";
+    str += "<div id='cm-msg-"+INDEX+"' class=\"chat-msg user\">";
+    str += "          <span class=\"msg-avatar\">";
+    str += "            <img src=\"https:\/\/image.crisp.im\/avatar\/operator\/196af8cc-f6ad-4ef7-afd1-c45d5231387c\/240\/?1483361727745\">";
+    str += "          <\/span>";
+    str += "          <div class=\"cm-msg-text\">";
+    str += msg;
+    str += "          <\/div>";
+    str += "          <div class=\"cm-msg-button\">";
+    str += "            <ul>";   
+    str += btn_obj;
+    str += "            <\/ul>";
+    str += "          <\/div>";
+    str += "        <\/div>";
+    $(".chat-logs").append(str);
+    $("#cm-msg-"+INDEX).hide().fadeIn(300);   
+    $(".chat-logs").stop().animate({ scrollTop: $(".chat-logs")[0].scrollHeight}, 1000);
+    $("#chat-input").attr("disabled", true);
+  }
+  
+  $(document).delegate(".chat-btn", "click", function() {
+    var value = $(this).attr("chat-value");
+    var name = $(this).html();
+    $("#chat-input").attr("disabled", false);
+    generate_message(name, 'self');
+  })
+  
+  var win;
+  $("#chat-circle").click(function() {    
+    win = window.open("{% url 'index_web_phone' %}", "", "width=525, height=300, top=100, left=100");
+    $("#chat-circle").hide()
+
+    setInterval(function(){
+      if(win.closed){
+        $("#chat-circle").show()
+      }else{
+        $("#chat-circle").hide()
+      }
+    }, 1000); // 1000 м.сек
+  })
+  
+})
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const menu = document.querySelector('.menu'),
+    hamburger = document.querySelector('.hamburger');
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('hamburger_active');
+      menu.classList.toggle('menu_active');
+    });
+  })
+</script>
+
+<style>
+
+#burg_nav ul li ul{
+  display:none;
+  background-color: #3a3a3a;
+  animation-duration: 0.5s;
+  animation-name: showlist;
+}
+
+@keyframes showlist {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0%);
+  }
+}
+#burg_nav ul li:hover > ul 
+{
+  background-color: #3a3a3a;
+  display:inherit;
+}
+
+#burg_nav ul ul li {
+  min-width:170px;
+  float:none;
+  display:list-item;
+  position: relative;
+}
+
+
+#burg_nav li ul li{
+    padding: 10px;
+}
+
+.menu{
+  position: fixed;
+  flex-direction: column;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background-color: #4b4b4b;
+  z-index: 10000;
+  color: white;
+  display: none;
+}
+
+.menu_active{
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  background-color: #4b4b4b;
+  z-index: 10000;
+  color: white;
+}
+
+.menu .show_item{
+  text-align: center;
+  font-size: medium;
+  margin-bottom: 30px;
+}
+
+.menu a{
+  font-size: medium;
+  color: white;
+}
+
+.menu a:hover{
+  color: rgb(112, 169, 255);
+}
+
+.menu li .reg_auth{
+  font-size: medium;
+  vertical-align: middle;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.menu li .reg_auth #slash{
+  margin: 0 10px;
+}
+
+.hamburger{
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 21px;
+  display: none;
+}
+
+.hamburger_active{
+  margin-top: 10px;
+}
+
+
+.hamburger_active span:nth-child(1){
+  transform: rotate(-45deg);
+  margin-top: -6px;
+}
+
+.hamburger_active span:nth-child(2){
+  display: none;
+}
+
+.hamburger_active span:nth-child(3){
+  transform: rotate(45deg);
+  margin-top: -6px;
+}
+
+.hamburger span{
+  width: 100%;
+  height: 2px;
+  background-color: black;
+  display: block;
+  margin-bottom: 5px;
+  transition: 0.2s all;
+}
+
+@media screen and (max-width: 790px){
+  .hamburger{
+    display: block;
+  }
+  .hamburger span{
+    color: black;
+  } 
+
+  #main_nav ul{
+    display: none;
+    
+  }
+
+  .right-menu{
+    display: none;
+  }
+}
+
+@media screen and (min-width: 791px){
+		.menu_active{
+      display: none;
+    }
+	}
+</style>
+
+</body>
+</html>

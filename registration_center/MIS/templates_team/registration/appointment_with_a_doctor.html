@@ -1,0 +1,133 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Запись на приём к врачу {% endblock %}
+
+{% block content %}
+
+<div id="maincontent" class="ui main container" style="margin-top: 130px; ">
+	<div class="ui stackable grid">
+		<div class="ui twenty equal width form" style="margin-bottom: 25px;">
+			<h4>Запись на приём к врачу</h4>
+			<form action="." method="POST" enctype="multipart/form-data">
+				<div class="profile__form-datas" >
+					{% csrf_token %}
+					<div class="fields">
+						<div class="field">
+							<label for="address">Адрес пациента</label>
+							{{form.address_fk}}
+						</div>
+						<div class="field">
+						<div class="item_filter" id="item_sel_filter">
+							<label for="address">Тип поликлиники</label>
+					<!-- onchange="getval()" -->
+							<select name="type_pol" id='select_type'>
+								{% for name in type_s %}
+									<option value="{{name.0}}">{{name.0}}</option>
+								{% endfor %}
+									<option value="ALL">Все</option>
+							</select>
+						</div>
+						</div>
+					</div>
+					<!-- <div class="fields">
+							<div class="item_filter" id="specialization">
+								<label class="lable_filter">Выбирите специализацию врача</label>
+								<select  class="input_add_note_doctor" name="type_doctor" id='specialization_type'>
+									{% for sp in specializations %}
+										<option value="{{sp.id}}">{{sp.name}}</option>
+									{% endfor %}
+								</select>
+							</div>
+					</div> -->
+					<div class="fields">
+						<div id="field_spec">
+							<label for="address">Выбирите специализацию врача</label>
+							{{form.scpec_fk}}
+						</div>
+					</div>
+						<span>Дата:</span>
+					<div class="fields">
+						<div class="field">
+							<label for=""> <b>C</b></label>
+							<input type="date" name="date_from" id="date_from" value="{% if from_date %}{{from_date}}{% else %}{{date}}{% endif %}">
+						</div>
+						<div class="field">
+							<label for=""> <b>По</b> </label>
+							<input type="date" name="date_to" id="date_to" value="{% if to_date %}{{to_date}}{% else %}{{date}}{% endif %}">
+						</div>
+					</div>
+						<span>Время:</span>
+					<div class="fields">
+						<div class="field">
+							<label for=""> <b>C</b></label>
+							<input type="time" name='time_from' id='time_from' value="{% if from_time %}{{from_time}}{% endif %}">
+						</div>
+						<div class="field">
+							<label for=""> <b>По</b> </label>
+							<input type="time" name='time_to' id='time_to' value="{% if to_time %}{{to_time}}{% endif %}">
+						</div>
+					</div>
+					<button class="ui right floated button" type="submit">Поиск</button>
+				</div>
+			</form>
+		</div>
+	</div>
+	<h3>Доступные Талоны</h3>
+	<table class="ui very padded table">
+	<thead>
+		<tr>
+			<th>Поликлиника</th>
+			<th>Врач</th>
+			<th>Дата</th>
+			<th>Талоны</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% if array_ticket %}
+		{% for data in array_ticket %}
+		<tr>
+			<td>{{data.name}}</td>
+			<td>{{data.name_a_doctor}} ({{data.doctor_type}})</td>
+			<td>{{data.date.date}}</td>
+			<td>
+				{% if data.tickets %}
+				{% for tickets in data.tickets %}
+				<a href="{% url 'making_an_appointment_with_a_doctor' tickets.id %}">
+					<button class="ui basic button">
+						{{tickets.start_date_of_appointment}} - {{tickets.appointment_end_date}}
+					</button>
+				</a>
+				<br>
+				{% endfor %}
+				{% else %}
+				Нет свободных талонов 
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+		{% endif %}
+	</tbody>
+	</table>
+</div>
+{{ form.media }}
+<style>
+	tr{
+		text-align: center;
+	}
+
+	#maincontent{
+		height: auto;
+	}
+
+    
+    .table{
+        margin-top: 2%;
+    }
+
+    .content{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+</style>
+{% endblock %}

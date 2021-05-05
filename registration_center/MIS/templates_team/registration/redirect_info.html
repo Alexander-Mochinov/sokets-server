@@ -1,0 +1,75 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Пользовательская информация {% endblock %}
+
+{% block content %}
+
+
+<div id="maincontent" class="ui main container">
+    <div class="ui stackable grid">
+        <div class="twenty wide column">
+            <div class="ui grid">
+                <div class="left floated six wide column" style="    text-align: left;">
+                    <form method="GET" action="{% url 'detail_actions' %}">
+                        <label for="">Дата: </label><br>
+                        <input type="date" name="date" id="search" value="{{date_now}}" style="width: 235px;"><br><br>
+                        <label for="">Время:</label><br>
+                        <label for=""> <b>C</b></label>
+                        <input type="time" name='time_from' value="{{time_from_search}}">
+                        <label for=""> <b>По</b> </label>
+                        <input type="time" name='time_to' value="{{time_to_search}}"><br><br>
+
+                        <button type="submit">
+                            Найти запись
+                        </button>
+                        <button>
+                            <a href="{% url 'detail_actions' %}">Сбросить фильтр</a>
+                        </button>
+                    </form>
+
+                </div>
+                <div class="center floated ten wide column">
+                    <div class="main-title">
+                        <h3>Действия на сайте</h3>
+                    </div>
+                </div>
+                <table class="ui small very compact unstackable selectable olive table" id="myTable_two">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Оператор</th>
+                            <th>Время записи</th>
+                            <th>Объект над которым совершалось действие</th>
+                            <th>Поликлиника</th>
+                            <th>Тип редиректа</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% if list_object %}
+                        {% for action in list_object %}
+                        <tr>
+                            <td>{{action.index}}</td>
+                            <td>{{action.activity.user}}</td>
+                            <td>{{action.activity.recording_time}}</td>
+                            <td>{{action.address}}</td>
+                            <td>{{action.polyclinic}}</td>
+                            <td>{{action.type}}</td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends '../base_template.html' %}
+{% load static %}
+
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="main-title">
+
+			</div>
+			<div class="ui grid">
+
+				<div class="left floated six wide column" style="    text-align: left;">
+
+				</div>
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title"> 
+						<h3>Список запросов на прикрепление</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Действие</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if attachers %}
+						{% for count, attach in attachers %}
+						<tr>
+							<td>{{count}}</td>
+							<td>{{attach.pacient.name}} {{attach.pacient.surname}} {{attach.pacient.patronymic}}</td>
+							<td>{{attach.pacient.phone_number}}</td>
+							<td><a href="{% url 'set_attach' attach.pacient.id attach.polyclinic.id attach.id %}">Привязать</a> / <a href="{% url 'cancellation_of_an_attachment'  attach.pacient.id attach.polyclinic.id attach.id %}">Отменить</a></td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+
+
+
+
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Список пациентов прикреплённых к {% if operator %} поликлиникам {% else %} поликлиники {% endif %}</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Действие</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if attachers_list %}
+						{% for count, attach in attachers_list %}
+						<tr>
+							<td>{{count}}</td>
+							<td>{{attach.pacient.name}} {{attach.pacient.surname}} {{attach.pacient.patronymic}}</td>
+							<td>{{attach.pacient.phone_number}}</td>
+							<td><a href="{% url 'datail_attach_pacient' attach.pacient.id attach.polyclinic.id%}">Показать карту пациента</a></td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+
+
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Регистрация пользователя {% endblock %}
+{%load chek_writer_extras %}
+{% block content %}
+<div id="modal_edit" class="modal">
+ 
+    <form class="modal-content animate" method="POST" id="change_data_form">
+        {% csrf_token %}
+        <div class="container">
+            <label for="psw"><b>Причина отмены вызова:</b></label>
+            <textarea cols="30" rows="10" name="reason_for_renouncement" class="input_add_note"></textarea>
+            <button class="fluid ui button"
+                onclick="document.getElementById('modal_edit').style.display='block'">Отменить вызов</button>
+        </div>
+ 
+        <div class="container" style="background-color:#f1f1f1">
+            <button type="button" onclick="document.getElementById('modal_edit').style.display='none'"
+                class="fluid ui button">Отмена</button>
+        </div>
+    </form>
+</div>
+ 
+ 
+ 
+<div id="maincontent" class="ui main container-fluid">
+    <div class="ui stackable grid">
+        <div class="ui main container">
+            <div class="twenty wide column">
+                <div class="ui grid">
+ 
+                    <div class="left floated six wide column" style="text-align: left;">
+                        <!-- <div class="ui grid"> -->
+                            <div class="nine wide column">
+                            <h3>Список пациентов</h3>
+                                <form method="GET" action="{% url 'DateSearchFilter' %}">
+                                     <label for="">Дата: </label><br>
+                                    <label for=""> <b>C</b></label>
+                                    <input type="date" name="date_to" id="search" value="{{date_to}}">
+                                    <label for=""> <b>По</b> </label>
+                                    <input type="date" name="date" id="search" value="{{date_now}}"><br><br>
+                                    <label for="">Время:</label><br>
+                                    <label for=""> <b>C</b></label>
+                                    <input type="time" name='time_from'>
+                                    <label for=""> <b>По</b> </label>
+                                    <input type="time" name='time_to'><br><br>
+                                    <label for="">Мед. учреждение</label><br>
+                                    <select name="select_polyclinic" id='select_id_p' style="width: 330px;">
+                                        <option value="">-----</option>
+                                        {% for i in option_data %}
+                                        <option value="{{i.id}}">{{i}}</option>
+                                        {% endfor %}
+                                    </select><br><br>
+                                    <div id="selection">
+                                        <label for="">Лечащий врач</label><br>
+                                        <select name="select_a_doctor" id='select_a_doctor'>
+                                            <option value="">-----</option>
+                                        </select><br><br>
+                                    </div>
+ 
+                                    <button type="submit">
+                                        Найти запись
+                                    </button>
+                                    <br><br>
+                                    <p>Примените фильтр чтобы скачать данные в exel</p>
+                                    <div class=" six wide column" style="text-align: left;">
+                                        <div class="main-title">
+                                            
+                                            <form action="{% url 'set_auto_update' %}" method="POST">
+                                                {% csrf_token %}
+                                                <label onclick="document.getElementById('update').click();">
+                                                    <input type="checkbox" id="auto_update" name="chek_update"
+                                                        {% if autoupdate %}checked{%  endif%} /> Авто
+                                                    обновление списка
+                                                </label>
+                                                <button type="submit" id="update" style="display: none;">UPDATE</button>
+                                            </form><br>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        <!-- </div> -->
+                    </div>
+                    <div class="right floated ten wide column">
+                        <form method="GET" action="" id="search_box">
+                            <input type="search" name="search_street" id="search_street" required placeholder="Улица">
+                            <input type="search" name="search_house" id="search_house" placeholder="Дом">
+                            <select name="search_branch" id="search_branch" required>
+                                {% for i in branch %}
+                                <option value="{{i.0}}" {% if i.0 == branch_name %} selected="select" {% endif %}>{{i.0}}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button onclick="Search_address();" type="button">
+                                Найти
+                            </button>
+                        </form>
+                    </div>
+                    <style>
+                        th,
+                        td {
+                            padding: 0px;
+                        }
+                    </style>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui container-fluid" style="padding: 35px;">
+        <table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+            <thead style="font-size: 11px;">
+                <tr>
+                    <th>№</th>
+                    <th width="120">Ф.И.О.</th>
+                    <th width="90">Дата рождения</th>
+                    <th>id addres</th>
+                    <th width="90">Aдрес проживания</th>
+                    <th width="90">Контактный номер телефона</th>
+                    <th onclick="sortTable(0)">Поликлиника</th>
+                    <th id='dateCol' style='cursor:pointer;'>Время записи</th>
+                    <th>Жалобы</th>
+                    <th style="width: 100px;">Тип вызова</th>
+                    <th>Доктор</th>
+                    <th>Оператор</th>
+                    <th style="text-align: center;" width="40">Вызов передан</th>
+                    <th width="40">Вызов отработан</th>
+                    <th></th>
+                </tr>
+            </thead>
+ 
+            <tbody style="font-size: 11px;    ">
+                {% if persons %}
+                {% for count, person in persons %}
+                <tr
+                    style="padding: 0px; {% if person.address_fk %}{% else %}background: rgb(255 2 2 / 8%)!important;{% endif %}">
+                    <td>{{count}}</td>
+                    <td>{{person.fio}}</td>
+                    <td>{{person.date_of_birth}}</td>
+                    <td>{{person.address_fk}}</td>
+                    <td>
+                        {{person.address}} кв.{{person.flat}}, <br>этаж: {{person.floor}}, п.
+                        {{person.entrance}}<br>код домофона:{{person.intercom_code}}
+                    </td>
+                    <td>{{person.phone}}</td>
+                    <td>{{person.polyclinic}}</td>
+                    <td>{{person.recording_time|date:"Y-m-d G:i"}}</td>
+                    <td>{{person.reason_for_calling}}</td>
+                    <td>
+                        {% if person.call_cancellation %}
+                        <a href="">
+                            <label for="renouncement_{{person.id}}"
+                                onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+                                Отказ</label>
+                        </a>
+                        {% else %}
+                        <input type="radio" class="radio_button" disabled name="c" id="c0" checked="checked" />
+                        <label for="c0" {% if person.type_call %}style="background: #2ecc71;" {% else %}
+                            style="background: #ea0626b5" {% endif %}></label><br>
+                        {% for i in type_call %}
+                        <label>
+                            <input {% if person.type_call.id == i.id %} checked {% endif %}
+                                id="person_{{person.id}}_{{i.id}}" name="type_call" type="checkbox"
+                                name="group{{person.id}}[]" value="{{i.id}}"
+                                onclick="cheked_box(' person_{{person.id}}_{{i.id}}','{{person.id}}')">
+                            {{i}}
+                        </label> <br>
+ 
+                        {% endfor %}
+                        <input type="checkbox" name="group{{person.id}}[]" id="renouncement_{{person.id}}"
+                            onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+                        <label for="renouncement_{{person.id}}"
+                            onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+                            Отказ</label>
+                        {% endif %}
+ 
+                    </td>
+                    <td>{% if person.doctor %}{{person.doctor.fio}}{% endif %}</td>
+                    <td>{% if person.operator %}{{person.operator}}{% else %} ----- {% endif %}</td>
+                    <td style="text-align: center;">
+                        {% if person.сall_transferred %}
+                        <a href="{% url 'cheked_write' person.id %}"><img src="{% static 'img/check.svg' %}" alt=""
+                                style="width: 35% !important"></a>
+                        {% else %}
+                        <a href="{% url 'cheked_write' person.id %}"><img src="{% static 'img/ban.svg' %}" alt=""
+                                style="width: 35% !important"></a>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if person.close_call %}
+                        <img src="{% static 'img/check.svg' %}" alt="" style="width: 33% !important">
+                        {% else %}
+                        <img src="{% static 'img/ban.svg' %}" alt="" style="width: 33% !important">
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'Patient_registration_update' person.pk %}"><img
+                                src="{% static 'img/set.png' %}" alt="" style="width: 18px;"></a></td>
+                    <!-- <td><a href="{% url 'Patient_registration_delete' person.pk %}" >Удалить</a></td> -->
+                </tr>
+                {% endfor %}
+ 
+                {% else %}
+                <tr>
+                    <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                </tr>
+                {% endif %}
+ 
+            </tbody>
+        </table>
+        {% if persons %}
+        <button><a href="{% url 'download_all' %}">Скачать весь список</a></button>
+        <!-- {% include "registration/paginator.html"%} -->
+        {% endif %}
+    </div>
+ 
+</div>
+ 
+<div id="address_modal" class="modal" style="padding-top: 0 !important; overflow: hidden;">
+    <div class="table" style="background-color:rgb(255, 255, 255); display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 4% auto 1% auto;width:80%">
+        <div class="container" style="overflow-y: scroll;height: 450px;width: 100%;">
+            <table class="ui small very compact unstackable selectable orange table" id="addr_table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(4)">Мед. Учреждание</th>
+                        <th onclick="sortTable(4)">Дом</th>
+                        <th onclick="sortTable(4)">Улица</th>
+                        <th>Подразделение</th>
+                        <th onclick="sortTable(4)">Участок</th>
+                        <th onclick="sortTable(2)">Email</th>
+                        <th onclick="sortTable(1)">Контактные Данные</th>
+                        <th>Записать пациента</th>
+                    </tr>
+                </thead>
+                <tbody id="address" style="overflow-y: scroll;height: 400px;">
+                </tbody>
+            </table>
+            <div id="text_not_found" style="text-align: center;"></div>
+        </div>
+        <button type="button" onclick=" CloseTable()"
+                class=" fluid ui button" style="width: 50%; margin: 2%;">Закрыть
+        </button>
+    </div>
+</div>
+ 
+ 
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script src="{% static 'js/filter.js' %}"></script>
+<script src="{% static 'js/list_pacient.js' %}"></script>
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $('#dateCol').click(function () {
+            sortTable_Date(6);
+        });
+    });
+</script>
+{% if autoupdate %}
+<script>
+    setTimeout(function () {
+        window.location.reload(1);
+    }, 20000);
+</script>
+{% endif %}
+
+<style scoped>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 999999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+ 
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto 15% auto;
+        border: 1px solid #888;
+        width: 50%;
+    }
+ 
+    .container {
+        padding: 16px;
+    }
+ 
+    span.psw {
+        float: right;
+        padding-top: 16px;
+    }
+ 
+</style>
+{% endblock %}

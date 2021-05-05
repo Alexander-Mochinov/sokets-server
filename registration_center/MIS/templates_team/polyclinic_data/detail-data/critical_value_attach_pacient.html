@@ -1,0 +1,105 @@
+{% extends base %}
+{% load static %}
+
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="ui grid">
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Список пациентов с критическими данными</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Показатель</th>
+							<th>Доверительное лицо</th>
+							<th>Посмотреть карту пациента</th>
+						</tr>
+					</thead>
+					<tbody>
+
+
+
+						{% if critical_value %}
+						{% for count, attach in critical_value %}
+						<tr>
+							<td>{{count}}</td>
+							<td>{{attach.pacient.name}} {{attach.pacient.surname}} {{attach.pacient.patronymic}}</td>
+							<td style="display: flex;align-items: center;text-align: center;justify-content: center;">{% if attach.pacient.phone_number %}<img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a  href="tel:{{attach.pacient.phone_number}}">{{attach.pacient.phone_number}}{% endif %}</a></td>
+							<td>{{attach.name}}</td>
+							<td>{{attach.pacient.relatives_phone_number}}</td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+
+
+
+
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Список пациентов в зоне риска</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Показатели<br>Пульса/Оксигенации</th>
+							<th>Доверительное лицо</th>
+							<th>Посмотреть карту пациента</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if result_list %}
+							{% for count, attach in result_list %}
+							<tr>
+								<td>{{count}}</td>
+								<td>{{attach.pacient.name}} {{attach.pacient.surname}} {{attach.pacient.patronymic}}</td>
+								<td style="display: flex;align-items: center;text-align: center;justify-content: center;"><img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a  href="tel:{{attach.pacient.phone_number}}">{{attach.pacient.phone_number}}</a></td>
+								<td>{% if attach.hr %} {{attach.hr}} {% else %} - {% endif %} / {% if attach.bo %} {{attach.bo}} {% else %} - {% endif %}</td>
+								<td>{{attach.pacient.relatives_phone_number}}</td>
+							</tr>
+							{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<input type="text" id="num_win" style="display: none;">
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script>
+	const number = '+79171041974'
+	$('#num_win').val(number)
+    //
+	var win;
+	function call(number){
+		$('#num_win').val(number)
+		win = window.open("{% url 'index_web_phone' %}", "", "width=525, height=300, top=100, left=100");
+		$("#chat-circle").hide()
+	}
+</script>
+{% endblock %}

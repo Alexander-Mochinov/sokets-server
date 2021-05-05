@@ -1,0 +1,177 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block script %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
+{% endblock %}
+{% block title %} Регистрация нового пользователя {% endblock %}
+
+
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+	<div class="main-title" style="text-align:right;">
+		{% if messages %}
+		{% for message in messages %}
+		<h4>{{ message }}</h4>
+		{% endfor %}
+		{% endif %}
+	</div>
+	<form action="." method="post" enctype="Multipart/form-data" style="display: flex;">
+		{% csrf_token %}
+		<div class="form-left">
+			<div class="form-group">
+				<h2 class="heading">Добавление заявления: </h2>
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.fio.errors}}</div><br>
+				<div class="controls">
+					{{form.fio}}
+					<label for="fio" class="active">ФИО:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.region_of_residence.errors}}
+				</div>
+				<br>
+				<div class="controls">
+					{{form.region_of_residence}}
+					<label for="date_of_birth" class="active">Регион проживания:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.phone.errors}}</div><br>
+				<div class="controls">
+					{{form.phone}}
+					<label for="fio" class="active">Контактный номер телефона:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.education.errors}}</div><br>
+				<div class="controls">
+					{{form.education}}
+					<label for="fio" class="active">Образование:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.specialty.errors}}</div><br>
+				<div class="controls">
+					{{form.specialty}}
+					<label for="fio" class="active">Cпециальность:</label><br>
+				</div>
+
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">
+					{{form.practical_experience.errors}}</div><br>
+				<div class="controls">
+					{{form.practical_experience}}
+					<label for="fio" class="active">Практический опыт:</label><br>
+				</div>
+
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">
+					{{form.desired_place_of_work.errors}}</div><br>
+				<div class="controls">
+					{{form.desired_place_of_work}}
+					<label for="fio" class="active">Желаемое место работы:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">
+					{{form.desired_salary.errors}}</div><br>
+				<div class="controls">
+					{{form.desired_salary}}
+					<label for="fio" class="active">Желаемая заработная плата:</label><br>
+				</div>
+
+				<div class="alert alert-danger" style="font-size: 15px; color: red;">
+					{{form.note.errors}}</div><br>
+				<div class="controls">
+					{{form.note}}
+					<label for="fio" class="active">Примечание:</label><br>
+				</div>
+
+				<div class="form-group">
+					<div class="controls">
+						<button type="button" class="btn btn-default" id="conf" data-toggle="modal"
+							data-target="#confirm-submit">Добавить запись</button>
+						<div class="modal fade" id="confirm-submit" style="z-index: 9999;" tabindex="-1" role="dialog"
+							aria-labelledby="myModalLabel">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h2 class="modal-title">Проверка данных !</h2>
+									</div>
+									<div class="modal-body" id="modals">
+										<p id="confirm_text"></p>
+										<script>
+											function chek_fields(personal_info) {
+												for (var i = 0; i < personal_info.length; i++) {
+													if (personal_info[i] == '') {
+														return false;
+													}
+												}
+												return true;
+											}
+											$('#conf').click(function () {
+												var modals = document.getElementById('modals');
+												var id_fio = document.getElementById('id_fio').value;
+												var id_region_of_residence = document.getElementById('id_region_of_residence').value;
+												var id_phone = document.getElementById('id_phone').value;
+												var id_note = document.getElementById('id_note').value;
+												var id_education = document.getElementById('id_education').value;
+												var id_specialty = document.getElementById('id_specialty').value;
+												var id_practical_experience = document.getElementById('id_practical_experience').value;
+												var id_desired_place_of_work = document.getElementById('id_desired_place_of_work').value;
+												var id_desired_salary = document.getElementById('id_desired_salary').value;
+												var personal_info = [
+													id_fio,
+													id_region_of_residence,
+													id_phone,
+													id_note,
+													id_education,
+													id_specialty,
+													id_practical_experience,
+													id_desired_place_of_work,
+													id_desired_salary,
+												];
+												if (chek_fields(personal_info)) {
+													$("#allowed").prop("disabled", false);
+												} else {
+													$("#allowed").prop("disabled", true);
+												}
+												modals.innerHTML = '\
+                    <p>Убедитесь что данные заполненны верно ! <br>\
+                    Фамилия Имя Очество : ' + id_fio + ' <br>\
+                    Регион проживания:' + id_region_of_residence + ' <br>\
+                    Образование: ' + id_education + ' <br>\
+                	Специальность: ' + id_specialty + ' <br>\
+                    Телефон: ' + id_phone + ' <br>\
+					Практический опыт: ' + id_practical_experience + ' <br>\
+					Желаемое место работы: ' + id_desired_place_of_work + ' <br>\
+					Желаемая з/п: ' + id_desired_salary + ' <br>\
+                    Примечание: ' + id_note;
+											});
+
+										</script>
+									</div>
+
+									<div class="modal-footer">
+
+										<button type="submit" class="ui secondary button element_modal" id="allowed"
+											style="width: 25% !important;background: #00a700;">
+											Продолжить !
+										</button>
+										<button type="button" class="ui button element_modal" data-dismiss="modal"
+											style="width: 25% !important;background-color: #f36a6a;">
+											Отмена
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-right">
+				<div class="form-group">
+				</div>
+			</div>
+	</form>
+</div>
+
+
+{% endblock %}

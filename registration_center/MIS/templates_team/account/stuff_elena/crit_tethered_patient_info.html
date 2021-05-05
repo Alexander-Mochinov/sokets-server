@@ -1,0 +1,333 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %}  {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="ui grid">
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Список пациентов с критическими данными</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Показатель / Значение</th>
+							<th>Время записи</th>
+							<th>Доверительное лицо</th>
+							<th>Посмотреть карту пациента</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if critical_value_for_polyclinic %}
+						{% for count, attach in critical_value_for_polyclinic %}
+						<tr>
+							<td>{{ count }}</td>
+							<td>{{attach.user.name}} {{attach.user.surname}} {{attach.user.patronymic}}</td>
+							<td style="display: flex;align-items: center;text-align: center;justify-content: center;"><img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a onclick="send_phone('{{attach.user.phone_number}}', {{attach.id}})">{{attach.user.phone_number}}</a></td>
+							<td>{{attach.content_object.get_params.name}} / {{attach.content_object.get_params.values}}</td>
+							<td>{{attach.connect}}</td>
+							<td>{{attach.user.relatives_phone_number}}</td>
+							<td><a href="{% url 'datail_attach_pacient' attach.user.id attach.user.attachers.get.polyclinic.id %}">Показать карту пациента</a></td>
+						</tr>
+						{% endfor %}
+
+						{% elif critical_value %}
+
+						{% for count, attach in critical_value %}
+						<tr>
+							<td>{{count }}</td>
+							<td>{{attach.user.name}} {{attach.user.surname}} {{attach.user.patronymic}}</td>
+							<td style="display: flex;align-items: center;text-align: center;justify-content: center;"><img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a onclick="send_phone('{{attach.user.phone_number}}', {{attach.id}})">{{attach.user.phone_number}}</a></td>
+							<td>{{attach.content_object.get_params.name}} / {{attach.content_object.get_params.values}}</td>
+							<td>{{attach.connect}}</td>
+							<td>{{attach.user.relatives_phone_number}}</td>
+							<td><a href="{% url 'datail_attach_pacient' attach.user.id attach.user.attachers.get.polyclinic.id %}">Показать карту пациента</a></td>
+						</tr>
+						{% endfor %}
+
+
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+
+
+
+
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Список пациентов в зоне риска</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Показатели<br>Пульса/Оксигенации</th>
+							<th>Доверительное лицо</th>
+							<th>Посмотреть карту пациента</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if result_list %}
+							{% for count, attach in result_list %}
+							<tr>
+								<td>{{count}}</td>
+								<td>{{attach.pacient.name}} {{attach.pacient.surname}} {{attach.pacient.patronymic}}</td>
+								<td style="display: flex;align-items: center;text-align: center;justify-content: center;"><img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a onclick="send_phone('{{attach.pacient.phone_number}}', {{attach.id_cr_values}})">{{attach.pacient.phone_number}}</a></td>
+								<td>{% if attach.hr %} {{attach.hr}} {% else %} - {% endif %} / {% if attach.bo %} {{attach.bo}} {% else %} - {% endif %}</td>
+								<td>{{attach.pacient.relatives_phone_number}}</td>
+							</tr>
+							{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+						{% endif %}
+					</tbody>
+				</table>
+
+
+
+
+				<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+					<div class="main-title">
+						<h3>Архив кретических пациентов</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Пораметр / Значение</th>
+							<th>Время формерования записи</th>
+							<th>Доверительное лицо</th>
+							<th>Посмотреть карту пациента</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if archive_value %}
+							{% for count, attach in archive_value %}
+							<tr>
+								<td>{{count}}</td>
+								<td>{{attach.critical_values.user.name}} {{attach.critical_values.user.surname}} {{attach.critical_values.user.patronymic}}</td>
+								<td style="display: flex;align-items: center;text-align: center;justify-content: center;"><img src="{% static 'img/ph.png' %}" alt="" style="width: 25px;"><a >{{attach.critical_values.user.phone_number}}</a></td>
+								<td>{{attach.critical_values.content_object.get_params.name}} / {{attach.critical_values.content_object.get_params.values}}</td>
+								<td>{{attach.date_time_create}}</td>
+								<td>{{attach.critical_values.user.relatives_phone_number}}</td>
+								<td><a href="{% url 'datail_attach_pacient' attach.critical_values.user.id attach.critical_values.user.attachers.get.polyclinic.id %}">Показать карту пациента</a></td>
+							</tr>
+							{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id='toast' class="toast" style="display: none;">
+	<div class="position_toast">
+		<div class="toast-header">
+			<span class="close" style="font-size: x-large;" onclick="MobileCO('toast')">&times;</span>
+		</div>
+		<hr>
+		<div class="toast-body">
+		  Звонок был отклонён
+		</div>
+	</div>
+</div>
+
+<div id="call_result" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_call_result"
+		style="margin: 5% auto 8% auto;width:45%; max-width: 750px;" method="POST" id="modal_call_result" >
+		<div class="container" style="height: 550px;">
+			{% csrf_token %}
+			<label for="start_time">Время начала звонка</label>
+			<input type="datetime-local" id="start_time" name="start_time" class="input_add_note_doctor" required>
+			<label for="end_time">Время конца звонка</label>
+			<input type="datetime-local" id="end_time" name="end_time" class="input_add_note_doctor" required>
+			<label for="complaint">Причина звонка</label>
+			<br>
+			<textarea type="text" id="complaint" name="complaint" class="input_add_note_doctor" rows="5" style="resize: none; " required></textarea>
+			<br>
+			<label for="Recommend">Рекомендации оператора</label>
+			<br>
+			<textarea type="text" id="Recommend" name="Recommend" class="input_add_note_doctor" rows="3" style="resize: none;" required></textarea>
+			<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_staff" type="submit"
+				onclick="document.getElementById('call_result').style.display='block'">Создать запись
+			</button>
+		</div>
+	</form>
+</div>
+
+<input type="hidden" id="num_win">
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+
+	var win;
+	function send_phone(number, id_values){
+		$("#num_win").val(number)
+		call(id_values)
+	}
+
+
+	function call(id_values){
+		// $('#num_win').val(number)
+		var count = 0
+		var not_error = false
+		
+		let date_start = new Date();
+		win = window.open("{% url 'index_web_phone' %}", "", "width=525, height=300, top=100, left=100");
+		localStorage.setItem('fast_call', true)
+		if(localStorage.getItem('fast_call')){
+			var refresh = setInterval(function(){
+				count++
+				if(win.closed && not_error){
+					$('#call_result').show()
+					localStorage.removeItem('fast_call')
+					clearInterval(refresh)
+				}
+				console.log(count)
+				if(count > 2){
+					count = 0
+					for(let i=localStorage.length; i>0; i--) {
+						let key = localStorage.key(i);
+						if(String(key).includes('stream')){
+							var dt = JSON.parse(localStorage.getItem(String(key)))
+							//NOrmal
+							if(dt.DataCollection[dt.TotalRows - 1].ReasonText.includes('Normal')){
+								not_error = true
+	
+								let date_end = new Date();
+
+								let url ='/create_and_return_critical_values/?t_start=' + date_start.toISOString() + '&t_end=' + date_end.toISOString() + '&id_values='+id_values;
+								$.ajax({
+									url: url,
+									datatype: 'json',
+									success: function (response) {
+										$('#modal_call_result').attr("action", '/complite_archive/' + response.id + '/');
+										$('#start_time').val(moment(response.talk_time_start).format("YYYY-MM-DDTkk:mm"))
+										$('#end_time').val(moment(response.talk_time_end).format("YYYY-MM-DDTkk:mm"))
+									}
+								});
+								$('#call_result').show()
+							}
+							//	
+							else{
+								MobileCO('toast')
+							}
+						}
+						// Error
+						else{
+							clearInterval(refresh)
+							MobileCO('toast')
+							win.close()
+							$("#chat-circle").show()
+            			}
+					}
+				}
+			}, 1000);
+		}
+		$("#chat-circle").hide()
+	}
+
+	function MobileCO(name) {
+		if($('#' + name).css('display') === 'flex'){
+			$('#' + name).css('animation-name', 'moveright')
+			setTimeout(() => {  $('#' + name).css('display', 'none') }, 990);
+			
+		}
+		else if($('#' + name).css('display') === 'none'){
+			$('#' + name).css('animation-name', 'moveleft')
+			setTimeout(() => {  $('#' + name).css('display', 'flex') }, 100);
+		}
+	}
+</script>
+<style>
+	.close{
+		top: 10px;
+		right: 10px;
+	}
+	.toast-header{
+		height: 20px;
+		width: 100%;
+		margin: 5px 0;
+	}
+	.toast-body{
+		height: 55px;
+		width: 100%;
+		display: flex;
+        align-items: center;
+		font-weight: 700;
+		font-size: medium;
+		padding: 5px;
+	}
+	.position_toast{
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+	}
+	.toast{
+		position: fixed;
+		right: 20px;
+		bottom: 20px;
+		height: 100px;
+		width: 250px;
+		border: 1px solid rgba(163, 163, 163, 0.596);
+		border-radius: 10px;
+		padding: 5px;
+		box-shadow: 2px 18px 21px 3px rgba(34, 60, 80, 0.28);
+		animation-duration: 1s;
+		animation-name: moveright;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes moveleft {
+		from {
+			transform: translateX(100%)
+		}
+
+		to {
+			transform: translateX(0%)
+		}
+	}
+
+	@keyframes moveright {
+		from {
+			transform: translateX(0%)
+		}
+
+		to {
+			transform: translateX(120%)
+		}
+	}
+</style>
+{% endblock %}

@@ -1,0 +1,401 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% load chek_writer_extras %}
+{% block title %} Пациенты поликлиники {% endblock %}
+
+{% block content %}
+<div id="maincontent" class="ui main container" style="margin-top: 30px;">
+
+
+
+<div class="column" style="margin-top: 30px;">
+			<div class="tabs" style="margin-bottom: 30px;">
+				<input type="radio" name="tab-btn" id="tab-btn-1" value="" data-toggle="tab" checked>
+				<label for="tab-btn-1">Список устройств</label>
+
+				<input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+				<label for="tab-btn-2">Не назначенные устройства</label>
+
+
+				<input type="radio" name="tab-btn" id="tab-btn-3" value="" data-toggle="tab">
+				<label for="tab-btn-3">Назначенные устройства</label>
+
+				<!-- <input type="radio" name="tab-btn" id="tab-btn-1" value="" data-toggle="tab" checked>
+				<label for="tab-btn-1">Список устройств</label> -->
+
+				<div id="content-1">
+					{% check_rule request.user 'Создание браслетов' as check_rule_view_patients %}
+					{% if check_rule_view_patients %}
+					<div class="ui buttons" >
+						<div class="right floated nine wide column">
+							<button 
+								onclick="document.getElementById('add_device_modal_id').style.display='block'"
+								class="ui right floated button green">
+								Добавить устройства
+							</button>
+						</div>
+					</div>
+					{% endif %}
+					<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+						<div class="main-title">
+							<h3>Список устройств</h3>
+						</div>
+					</div>
+					<table class="ui small very compact unstackable selectable orange table" id='myTable_one'
+					style="text-align: center;">
+						<thead>
+							<tr>
+								<th>№</th>
+								<th onclick="sortTable(0)">Номер по порядку</th>
+								<th>Название</th>
+								<th>Назначен</th>
+								<th>Мак адресс</th>
+								{% check_rule request.user 'Редактирование браслетов' as check_rule_view_patients %}
+								{% if check_rule_view_patients %}
+								<th>Редактировать</th>
+								{% endif %}
+							</tr>
+						</thead>
+						<tbody>
+							{% if devices %}
+							{% for device in devices %}
+							<tr>
+								<td>{{ forloop.counter }} </td>
+								<td>{{device.increment}}</td>
+								<td>{{device.name}}</td>
+								<td>
+									{% if device.is_belongs %}
+										{% get_pacient_fio  device.polyclinic device.id %}
+									{% else %}
+									<img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px;">
+									{% endif %}
+								</td>
+								<td>{{device.mac_adress}}</td>
+								{% if check_rule_view_patients %}
+									<td>
+										<img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_patient"
+											onclick=" get_info_wristband('{{ device.id }}'); document.getElementById('edit-t-device-modal-id').style.display='block'">
+										
+										{% comment %}
+										{% if device.is_belongs %}
+										{% get_pacient device.id device.polyclinic.id as t_pacient %}
+										/ <a href="{% url 'untie_device' t_pacient device.id %}">Открепить</a>
+										{% endif %}
+										{% endcomment %}
+									</td>
+								{% endif %}
+							</tr>
+							{% endfor %}
+							{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+
+					<div class="paginator p">
+						<ul>
+							{% if page.has_previous %}
+								<a href="?page={{page.previous_page_number}}">ᐸ</a>
+							{% endif %}
+								страница  {{ page.number }} из {{ page.paginator.num_pages }}
+							{% if page.has_next %}
+								<a class="is-active" href="?page={{ page.next_page_number }}">ᐳ</a>
+							{% endif %}
+						</ul>
+					</div>
+				</div>
+				<div id="content-2">					
+					<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+						<div class="main-title">
+							<h3>Не назначенные устройства</h3>
+						</div>
+					</div>
+					<table class="ui small very compact unstackable selectable orange table" id='myTable_one'
+					style="text-align: center;">
+						<thead>
+							<tr>
+								<th>№</th>
+								<th onclick="sortTable(0)">Номер по порядку</th>
+								<th>Название</th>
+								<!-- <th>Назначен</th> -->
+								<th>Мак адресс</th>
+								{% if check_rule_view_patients %}
+								<th>Редактировать</th>
+								{% endif %}
+							</tr>
+						</thead>
+						<tbody>
+							{% if free_device %}
+							{% for device in free_device %}
+							<tr>
+								<td>{{ forloop.counter }} </td>
+								<td>{{device.increment}}</td>
+								<td>{{device.name}}</td>
+								<!-- <td>
+									{% if device.is_belongs %}
+									<img src="{%  static 'img/chek.png' %}}" alt="" style="width: 25px;">
+									{% else %}
+									<img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px;">
+									{% endif %}
+								</td> -->
+								<td>{{device.mac_adress}}</td>
+								{% if check_rule_view_patients %}
+									<td>
+										<img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_patient"
+											onclick=" get_info_wristband('{{ device.id }}'); document.getElementById('edit-t-device-modal-id').style.display='block'">
+									</td>
+								{% endif %}
+							</tr>
+							{% endfor %}
+							{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+
+					<div class="paginator p">
+						<ul>
+							{% if page2.has_previous %}
+								<a href="?p_is_bel={{page2.previous_page_number}}">ᐸ</a>
+							{% endif %}
+								страница  {{ page2.number }} из {{ page2.paginator.num_pages }}
+							{% if page2.has_next %}
+								<a class="is-active" href="?p_is_bel={{ page2.next_page_number }}">ᐳ</a>
+							{% endif %}
+						</ul>
+					</div>
+
+				</div>
+				<div id="content-3">
+					<div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+						<div class="main-title">
+							<h3>Назначенные устройства</h3>
+						</div>
+					</div>
+					<table class="ui small very compact unstackable selectable orange table" id='myTable_one'
+					style="text-align: center;">
+						<thead>
+							<tr>
+								<th>№</th>
+								<th onclick="sortTable(0)">Номер по порядку</th>
+								<th>Название</th>
+								<th>Назначен</th>
+								<th>Мак адресс</th>
+								{% if check_rule_view_patients %}
+								<th>Редактировать</th>
+								{% endif %}
+							</tr>
+						</thead>
+						<tbody>
+							{% if not_free_device %}
+							{% for device in not_free_device %}
+							<tr>
+								<td>{{ forloop.counter }} </td>
+								<td>{{device.increment}}</td>
+								<td>{{device.name}}</td>
+								<td>
+									{% if device.is_belongs %}
+									{% get_pacient_fio  device.polyclinic device.id %}
+									{% else %}
+									{% endif %}
+								</td>
+								<td>{{device.mac_adress}}</td>
+								{% if check_rule_view_patients %}
+								<td>
+									<img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_patient"
+										onclick=" get_info_wristband('{{ device.id }}'); document.getElementById('edit-t-device-modal-id').style.display='block'">
+									{% comment %}
+									{% if device.is_belongs %}
+									{% get_pacient device.id device.polyclinic.id as t_pacient %}
+									/ <a href="{% url 'untie_device' t_pacient device.id %}">Открепить</a>
+									{% endif %}
+									{% endcomment %}
+								</td>
+								{% endif %}
+							</tr>
+							{% endfor %}
+							{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+
+					<div class="paginator p">
+						<ul>
+							{% if page3.has_previous %}
+								<a href="?p_is_no_bel={{page3.previous_page_number}}">ᐸ</a>
+							{% endif %}
+								страница  {{ page3.number }} из {{ page3.paginator.num_pages }}
+							{% if page3.has_next %}
+								<a class="is-active" href="?p_is_no_bel={{ page3.next_page_number }}">ᐳ</a>
+							{% endif %}
+						</ul>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+
+
+
+
+
+
+    <br><br><br>
+</div>
+
+<!-- modal -->
+<div id="add_device_modal_id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_doctor" action="{% url 'add_wristband' %}" style="margin: 1% auto 8% auto;width:45%"
+		method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 200px;">
+			<label for="edit_fio">Название устройства</label>
+			<input type="text" id="name_device" name="name_device" class="input_add_note_doctor" required>
+
+            <label for="count_band">Кол-во (шт)</label>
+			<input type="number" min="0" class="input_add_note_doctor" name="count_band">
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="chek_chekbox_zone"
+				type="submit">
+				Добавить</button><br>
+			<button type="button" onclick="document.getElementById('add_device_modal_id').style.display='none'" class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- edit-t-patient-modal-id -->
+<div id="edit-t-device-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_device_tp" action="" style="margin: 1% auto 8% auto;width:45%"
+		method="POST">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 300px;">
+			<label for="edit_fio">Название</label>
+			<input type="text" id="wrist_band_name" name="n" class="input_add_note_doctor" required>
+            <label for="edit_fio">Мак адрес</label>
+			<input type="text" id="wrist_band_mac_adress" name="mac" class="input_add_note_doctor" required>
+			<div class="fields">
+				<div class="field">
+					<label for="address">Установка браслета пациенту</label>
+					{{ form.t_patients_fk }}
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="chek_chekbox_zone"
+				type="submit" onclick="document.getElementById('edit-t-device-modal-id').style.display='block'">
+				Изменить</button><br>
+			<button type="button" onclick="document.getElementById('edit-t-device-modal-id').style.display='none'" class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+{{ form.media }}
+
+<script>
+    function get_info_wristband(id_band) {
+		var list = {}
+
+		$.ajax({
+		url: "/account-polyclinic/get_info_wristband/" + id_band + "/",
+		dataType: 'json',
+		success: function (response) {
+			for (i in response) {
+				list = {
+					'name' : response.name,
+					'mac_adress' : response.mac_adress,
+					'increment' : response.increment,
+					'polyclinic' : response.polyclinic,
+					'is_belongs' : response.is_belongs,
+				}
+			}
+			console.log(list)
+			let url = '/account-polyclinic/update_wristband/' + id_band + "/";
+			$('.modal_edit_device_tp').attr('action', url);
+
+			$('#wrist_band_name').val(list.name)
+			$('#wrist_band_mac_adress').val(list.mac_adress)
+			if (list.is_belongs){
+				$('#wrist_band_is_belongs').val('cheked', true)
+			} else {
+				$('#wrist_band_is_belongs').attr('cheked', false)
+			}
+		}
+		});
+	}
+
+
+</script>
+<style>
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--single {
+    height: 30px !important;
+    line-height: 15px !important;
+}
+
+.ui[class*="right floated"].button, .ui[class*="right floated"].buttons {
+    float: left;
+    margin-left: 0em !important;
+    margin-top: 10px;
+}
+
+.select2-container {
+    z-index: 999999;
+}
+
+.paginator a{
+		font-weight: 800;
+		color: black;
+	}
+
+.paginator{
+	font-size: large;
+	padding-bottom: 30px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 50px;
+}
+
+.paginator{
+	padding: 30px 0;
+}
+
+.paginator ul{ 
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	margin: auto;
+	text-align: center;
+}
+
+.paginator a{
+	display: inline-block;
+	padding: 10px 18px;
+	color: #222;
+}
+.p{
+	min-width: 300px;
+	margin: auto;
+}
+.p a{
+	background-color: #2ecc71;
+	margin: auto 5px;
+	color: #fff;
+	border: 3px solid #2ecc71;
+	position: relative;
+}
+
+.p .is-active{
+	font-weight: bold;
+}
+</style>
+{% endblock %}

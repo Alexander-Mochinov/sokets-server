@@ -1,0 +1,150 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block script %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
+{% endblock %}
+{% block title %} Регистрация нового пользователя {% endblock %}
+
+
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+  <div class="main-title" style="text-align:right;">
+    {% if messages %}
+    {% for message in messages %}
+    <h4>{{ message }}</h4>
+    {% endfor %}
+    {% endif %}
+  </div>
+  <form action="." method="post" enctype="Multipart/form-data" style="display: flex;">
+    {% csrf_token %}
+    <div class="form-left">
+      <div class="form-group">
+        <h2 class="heading">Обязательные поля: </h2>
+        
+        <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.fio.errors}}</div><br>
+        <div class="controls">
+          {{form.fio}}
+          <label for="fio" class="active">ФИО:</label><br>
+        </div><br>
+        <div class="controls">
+          {{form.date_of_birth}}
+          <label for="date_of_birth" class="active">Дата рождения:</label><br>
+        </div>
+        <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.address.errors}}</div><br>
+
+        <div class="controls">
+          {{form.address}} <br>
+          <label for="entrance" class="active">Адрес проживания:<span style="color: red;">*</span></label>
+        </div>
+        <div class="form-group">
+          <h2 class="heading" class="active">Контактные данные:</h2>
+
+          <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.phone.errors}}</div><br>
+          <div class="controls">
+            {{form.phone}}
+            <label for="phone" class="active">Телефон: </label><br>
+          </div>
+
+          <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.SNILS.errors}}<br></div><br>
+          <div class="controls">
+
+            {{form.SNILS}}
+            <label for="SNILS" class="active">СНИЛС: </label><br>
+          </div>
+
+          <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.C_M_O_policy.errors}}</div>
+          <br>
+          <div class="controls">
+            {{form.C_M_O_policy}}
+            <label for="C_M_O_policy" class="active">Полис ОМС: </label><br>
+          </div>
+        </div><br>
+          <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.direction_number.errors}}</div>
+          <div class="controls">
+            {{form.direction_number}}
+            <label for="C_M_O_policy" class="active">Номер направления: </label><br>
+          </div>
+        </div>
+        <div class="form-group">
+
+          <h2 class="heading" class="active">Причины:</h2>
+          <div class="controls">
+            {{form.reason_for_calling}}
+            <label for="comments" class="active">Необхоимый приём:<span style="color: red;">*</span></label><br>
+            <button type="button" class="btn btn-default" id="conf" data-toggle="modal"
+              data-target="#confirm-submit">Добавить запись</button>
+            <div class="modal fade" id="confirm-submit" style="z-index: 9999;" tabindex="-1" role="dialog"
+              aria-labelledby="myModalLabel">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content" style="width: 100%  !important;">
+                  <div class="modal-header">
+                    <h2 class="modal-title">Проверка данных !</h2>
+                  </div>
+                  <div class="modal-body" id="modals">
+                    <p id="confirm_text"></p>
+                    <script>
+                      function chek_fields(personal_info) {
+                        for (var i = 0; i < personal_info.length; i++) {
+                          if (personal_info[i] == '') {
+                            return false;
+                          }
+                        }
+                        return true;
+                      }
+                      $('#conf').click(function () {
+                        var modals = document.getElementById('modals');
+                        var name = document.getElementById('name');
+                        var date_of_birth = document.getElementById('date_of_birth');
+                        var address = document.getElementById('address');
+                        var tel = document.getElementById('tel');
+                        var snils = document.getElementById('SNILS');
+                        var C_M_O_policy = document.getElementById('C_M_O_policy');
+                        var reason_for_calling = document.getElementById('reason_for_calling');
+                        var personal_info = [name.value, date_of_birth.value, address.value, tel.value, reason_for_calling.value];
+                        if (chek_fields(personal_info)) {
+                          $("#allowed").prop("disabled", false);
+                        } else {
+                          $("#allowed").prop("disabled", true);
+                        }
+                        modals.innerHTML = '\
+                    <p>Убедитесь что данные заполненны верно ! <br>\
+                    Фамилия Имя Очество : ' + name.value + ' <br>\
+                    Дата рождения :' + date_of_birth.value + ' <br>\
+                    Адрес Проживания : ' + address.value + ' <br>\
+                    Телефон : ' + tel.value + ' <br>\
+                    СНИЛС : ' + snils.value + ' <br>\
+                    Полис ОМС : ' + C_M_O_policy.value + ' <br>\
+                    Необхоимый приём : ' + reason_for_calling.value;
+                      });
+
+                    </script>
+                  </div>
+
+                  <div class="modal-footer">
+
+                    <button type="submit" class="ui secondary button element_modal" id="allowed"
+                      style="width: 25% !important;background: #00a700;">
+                      Продолжить !
+                    </button>
+                    <button type="button" class="ui button element_modal" data-dismiss="modal"
+                      style="width: 25% !important;background-color: #f36a6a;">
+                      Отмена
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-right">
+        <div class="form-group">
+        </div>
+      </div>
+  </form>
+</div>
+
+
+{% endblock %}

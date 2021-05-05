@@ -1,0 +1,201 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} График работы Доктора{% endblock %}
+{% block content %}
+<div id="maincontent" class="ui main container">
+    <div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+		<div class="main-title">
+			<h3>Профиль Доктора {{ doctor.fio }}</h3>
+            
+                {% if create_days %}
+                    {{create_days}}
+                {% endif %}
+		</div>
+	</div>
+    <div class="right floated six wide column calendar-box">
+        <div class="title_calendar">
+            <div class="main-title">
+                <h3>Календарь</h3>
+            </div>
+            <button onclick="document.getElementById('add_days').style.display = 'block'" class="ui right floated green button">
+                Добавить дни
+            </button>
+        </div>
+        <div class="calendar">
+            <div class="date-MY">
+                <div class="date-item prev" style="display: none"> < </div>
+                <div class="date-item" id="month"> Month </div>
+                <div class="date-item" id="year"> Year </div>
+                <div class="date-item next"> > </div>
+            </div>
+            <div class="calendar_body">
+                <div class="days">
+                    <div>Пн</div>
+                    <div>Вт</div>
+                    <div>Ср</div>
+                    <div>Чт</div>
+                    <div>Пт</div>
+                    <div>Сб</div>
+                    <div>Вс</div>
+                </div>
+                <div class="dates">
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+
+<!-- MODALS -->
+
+<!-- doctor_workchedule_modal_edit -->
+<div id="doctor_workchedule_modal_edit" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_doctor" action="" id="form_change_day" style="margin: 1% auto 8% auto;width:45%"
+		method="GET">
+		<div class="container" style="overflow-y: auto;height: 450px;">
+			<label for="edit_date">Дата</label>
+			<input type="date" id="date" name="date" class="input_add_note_doctor" readonly>
+			<label for="edit_start_work">Начала работы: AM - день, PM - вечер</label>
+			<input type="time" id="work_period_start" name="start_date_of_appointment" class="input_add_note_doctor" required>
+			<label for="edit_end_work">Конец рабочего дня: AM - день, PM - вечер</label>
+			<input type="time" id="end_work_period" name="appointment_end_date" class="input_add_note_doctor" required>
+            <h5>Для создания талонов укажите часы приёма, если врач по какой либо причине не проводит осмотр поставьте Присутствие врача или же его отсутствие!</h5>
+			<label for="edit_start_work">Начала приёма пациента: AM - день, PM - вечер</label>
+            <input type="time" id="start_date_of_appointment" name="start_work" class="input_add_note_doctor">
+			<label for="appointment_end_date">Конец приёма пациента: AM - день, PM - вечер</label>
+            <input type="time" id="appointment_end_date" name="end_work" class="input_add_note_doctor">
+			<label for="edit_count_of_minute_on_one_see">Кол-во минут на осмотр</label>
+			<input type="number" id="count_of_minute_on_one_see" min="0" oninput="validity.valid||(value='');" name="count_of_minute_on_one_see" class="input_add_note_doctor" required>
+            <div class="weekend_field">
+                <label><input type="checkbox" id="weekend" name="weekend" class="" style="margin-right: 5px;">Присутствие врача на <span id="exist"></span></label> 
+            </div>
+            <div class="show_input_refuse">
+                <label for="">Причина отказа <br> Причина отказа будет отображена у пациента если запись на данный день состоялась!</label>
+                <textarea name="refuse" id="show_input_refuse_input" cols="10" rows="10" class="input_add_note_doctor" ></textarea>
+            </div>
+        </div>
+		<div class="modal-footer" style="margin-top: 0;"><button class="fluid ui button" id="chek_chekbox_zone"
+				type="submit" onclick="document.getElementById('doctor_workchedule_modal_edit').style.display='block'">
+				Редактировать</button><br>
+			<button type="button" onclick="document.getElementById('doctor_workchedule_modal_edit').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+
+<!-- add_days -->
+<div id="add_days" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_doctor" action="{% url 'schedule_doctor' doctor.id %}" style="margin: 1% auto 8% auto;width:45%"
+		method="POST">
+        {% csrf_token %}
+		<div class="container" style="overflow-y: hidden;height: 100px;">
+			<label for="edit_date">Кол-во Дней</label>
+			<input type="number" max="15"  id="a_days" name="count_of_days" class="input_add_note_doctor" required>
+        </div>
+		<div class="modal-footer" style="margin-top: 0;">
+            <button class="fluid ui button" id="chek_chekbox_zone"
+				type="submit" onclick="document.getElementById('add_days').style.display='block'">
+				Добавить</button><br>
+			<button type="button" onclick="document.getElementById('add_days').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- END MODALS -->
+
+<script src="{% static 'js/schedule_doctor.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    $.ajax({
+      url: "/send_chedule/" + '{{doctor.id}}' + "/", // поставить url для получения расписания
+      dataType: 'json',
+      success: function (response)
+      {
+            var data = response;
+            let obj = JSON.parse(data);
+            //Get Data from Date
+            let nowDate = new Date(),
+            nowDateNumber = nowDate.getDate(),
+            nowMonth = nowDate.getMonth(),
+            nowYear = nowDate.getFullYear(),
+            monthContainer = document.getElementById('month'),
+            yearContainer = document.getElementById('year'),
+            daysContainer = document.body.getElementsByClassName('dates'),
+            prev = document.getElementsByClassName('prev')[0],
+            next = document.getElementsByClassName('next')[0],
+            monthName = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+            // Create new days-div for calendar
+            function setMonthCalendar(year,month) {
+                var monthDays = new Date(year, month + 1, 0).getDate(),
+                monthPrefix = new Date(year, month, 0).getDay(),
+                monthDaysText = '';
+                monthContainer.textContent = monthName[month];
+                yearContainer.textContent = year;
+                daysContainer.innerHTML = '';
+                if (monthPrefix > 0){
+                    for (let i = 1  ; i <= monthPrefix; i++){
+                        monthDaysText += '<div class="date-lock"></div>';
+                    }
+                }
+
+                // ADDed dis/active date
+                for (let i = 1; i <= monthDays; i++){
+                    var fl = true;
+                    for (var years in obj){
+                        if(years == year){
+                            for (var months in obj[years]){
+                                if(months == month + 1){
+                                    for (var days in obj[years][months]){
+                                        console.log()
+                                        if(obj[years][months][days].split(',')[1].split('.')[2] == i){
+                                            if(obj[years][months][days].split(',')[2] == 'False'){
+                                                monthDaysText += '<div class="date-free" onclick="open_modal('+obj[years][months][days].split(',')[0]+')">' + i + '</div>';
+                                                fl = false; 
+                                            }else{
+                                                monthDaysText += '<div class="date" onclick="open_modal('+obj[years][months][days].split(',')[0]+')">' + i + '</div>';
+                                                fl = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(fl){
+                        monthDaysText += '<div class="date-lock">' + i + '</div>';
+                    }
+                }
+
+                daysContainer[0].innerHTML = monthDaysText;
+            }
+            
+            setMonthCalendar(nowYear,nowMonth);
+
+            prev.onclick = function () {
+                let curDate = new Date(yearContainer.textContent,monthName.indexOf(monthContainer.textContent));
+                curDate.setMonth(curDate.getMonth() - 1);
+                let curYear = curDate.getFullYear(),
+                    curMonth = curDate.getMonth();
+                prev.style.display = 'none'
+                next.style.display = 'block'
+                setMonthCalendar(curYear,curMonth);
+            }
+
+            next.onclick = function () {
+                let curDate = new Date(yearContainer.textContent,monthName.indexOf(monthContainer.textContent));
+                curDate.setMonth(curDate.getMonth() + 1);
+                let curYear = curDate.getFullYear(),
+                    curMonth = curDate.getMonth();
+                prev.style.display = 'block'
+                next.style.display = 'none'
+                setMonthCalendar(curYear,curMonth);
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

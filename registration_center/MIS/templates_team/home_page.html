@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load chek_writer_extras %}
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="{% static 'css/sinematic.min.css' %}">
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="{% static 'js/jq2.js' %}"></script>
+	{% block script %}{% endblock %}
+	<title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+	<nav role='navigation'>
+		<ul>
+			<a href="{% url 'main_page' %}" style="margin-top: 25px;margin-left: 77px;"><img src="{% static 'img/logo.png' %}" alt="" style="width: 100%;float: left; width: 200px; margin: auto;"></a>
+			</li>
+			<li><a href=""></a>
+				<ul class="m-auto">
+					<li>
+						<a href=""></a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<ul class="right-menu">
+			<li>
+				{% if request.user.is_authenticated %}
+				<a href="{% url 'logout' %}" class="header item">Выйти</a>
+				{% else %}
+				<a href="{% url 'login' %}" class="header item">Войти</a>
+				{% endif %}
+			</li>
+			<!-- <li><a href="#"></a></li> -->
+		</ul>
+	</nav>
+	{% block content %}
+	{% endblock %}
+</body>
+
+</html>

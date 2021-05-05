@@ -1,0 +1,148 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %}  {% endblock %}
+{% load chek_writer_extras %}
+{% block content %}
+<div id="maincontent" class="ui main container" style="margin-top: 30px;">
+    <div class="ui grid">
+		<div class="left floated four wide column">
+			<h2>Подразделения</h3>
+		</div>
+		<div class="right floated nine wide column">
+            <button 
+            onclick="document.getElementById('modal_create_subdiv').style.display='block'"
+            class="ui right floated button">Добавить подразделение</button>
+		</div>
+    </div>
+    <table class="ui small very compact unstackable selectable orange table" id='myTable_two'
+    style="text-align: center;">
+        <thead>
+            <tr>
+				<th> № </th>
+                <th onclick="sortTable(0)"> Название подразделения </th>
+				<th> Отделение </th>
+                <th>Эл. адрес:</th>
+                <th>Контактные данные:</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if subdivs %}
+            {% for subdiv in subdivs.all %}
+            <tr>
+				<td class="id_subdiv" style="display: none;">{{ subdiv.id }}</td>
+				<td>{{ forloop.counter }}</td>	
+                <td>{{subdiv.name_sub|default_if_none:""}}</td>
+				<td>{{subdiv.branch|default_if_none:""}}</td>
+                <td>{{subdiv.email_sub|default_if_none:""}}</td>
+                <td>{{subdiv.contact_sub|default_if_none:""}}</td>
+                <td>
+                    <img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_subdiv"
+                        onclick="document.getElementById('modal_edit_subdiv').style.display='block'">
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="12" style="text-align: center;"> Нет данных !</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- modal_edit_subdiv -->
+<div id="modal_edit_subdiv" class="modal">
+	<form class="modal-content animate form_edit_subdiv" method="POST" action=""
+		style="width: 55% !important;margin: 0% auto 15% auto !important;">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 510px;">
+			<h2 class="heading">Обязательные поля</h2>
+			<label for="subdiv_name">Название подразделения:</label>
+				<input 
+				type="text" 
+				id="subdiv_name" 
+				name="subdiv_name"
+				class="input_create_subdiv"
+				required>
+			
+			<label for="type">Отделение:</label>
+				<select name="type_edit" id="type_edit" class="input_create_subdiv" required>
+					{% for subdiv in subdivs.0.CHOICES_OPTION %}
+						<option value="{{ subdiv.0 }}" {% if subdiv.0 == subdiv.0 %} selected {% endif %}>{{ subdiv.0 }}</option>
+					{% endfor %}
+				</select>
+
+			<label for="email">Эл. адрес:</label>
+				<input 
+				type="email" id="email" 
+				name="email"
+				class="input_create_subdiv"
+				required>
+
+			<label for="contact_data">Контактные данные:</label>
+				<textarea 
+				name="contact_data" id="contact_data"
+				cols="10" rows="10"
+				class="input_create_subdiv">
+				</textarea>
+		</div>
+		  <div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" type="submit"
+				onclick="document.getElementById('modal_edit_subdiv').style.display='block'">Изменить</button><br>
+			<button onclick="document.getElementById('modal_edit_subdiv').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<!-- modal_create_subdiv -->
+<div id="modal_create_subdiv" class="modal">
+	<form class="modal-content animate modal_create_subdiv" method="POST" action="{% url 'create_subdiv' polyclinic_info %}"
+		style="width: 55% !important;margin: 0% auto 15% auto !important;">
+		{% csrf_token %}
+		<div class="container" style="overflow-y: scroll;height: 510px;">
+			<h2 class="heading">Обязательные поля</h2>
+			<label for="subdiv_name">Название подразделения:</label>
+				<input 
+				type="text" 
+				id="subdiv_name" 
+				name="subdiv_name"
+				class="input_create_subdiv"
+				required>
+
+			<label for="type">Отделение:</label>
+				<select name="type" id="type" class="input_create_subdiv" required>
+					{% for subdiv in subdivs.0.CHOICES_OPTION %}
+						<option value="{{ subdiv.0 }}">{{ subdiv.0 }}</option>
+					{% endfor %}
+				</select>
+
+			<label for="email">Эл. адрес:</label>
+				<input 
+				type="email" id="email" 
+				name="email"
+				class="input_create_subdiv"
+				required>
+
+			<label for="contact_data">Контактные данные:</label>
+				<textarea 
+				name="contact_data" id="contact_data"
+				cols="20" rows="10"
+				class="input_create_subdiv" 
+				required>
+				</textarea>
+		</div>
+		  <div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" type="submit"
+				onclick="document.getElementById('modal_create_subdiv').style.display='block'">Создать</button><br>
+			<button onclick="document.getElementById('modal_create_subdiv').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/tabs.js' %}"></script>
+<script src="{% static 'js/list_subdivisions_polyclinic.js' %}"></script>
+{% endblock %}

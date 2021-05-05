@@ -1,0 +1,164 @@
+{% extends './generate_tmp.html' %}
+{% load static %}
+{% load tags %}
+{% block title %} Оксигенация {% endblock %}
+
+{% block content %}
+
+<div class="ui stackable grid">
+	<div class="twenty wide column">
+		
+		<div class="ui stackable grid">
+			<div class="seven wide column">
+				<form method="GET" action="{% url 'oxygenation' %}" name="filter">
+					<label for="">Дата: </label><br>
+					<label for=""> <b>C</b></label>
+					<input type="date" name="date_to" value="{% if date_now %}{{date_now}}{% else %}{{datetime}}{% endif %}">
+					<label for=""> <b>По</b> </label>
+					<input type="date" name="date"  value="{% if date %}{{date}}{% else %}{{datetime}}{% endif %}"><br><br>
+					<label for="">Время:</label><br>
+					<label for=""> <b>C</b></label>
+					<input type="time" name='time_from' value="{% if time_from_search %}{{time_from_search}}{% endif %}">
+					<label for=""> <b>По</b> </label>
+					<input type="time" name='time_to' value="{% if time_to_search %}{{time_to_search}} {% endif %}"><br><br>
+					<button type="submit" class="ui button">
+						Поиск
+					</button>
+				</form>
+			</div>
+			<div class="seven wide column">
+				<h4>Введите границы критических показателей</h4>
+				<table class="ui table">
+					<tbody>
+						<tr >
+							<td class="collapsing" width="80">
+								Мин. значение
+							</td>
+							<td><input type="number" id="bo_min" value="{{current_pacient.bo_min}}" style="width: 50px;float: right;"></td>
+						</tr>
+					</tbody>
+				</table>
+				<button class="ui button" id="parameters" style="float: right;">Сохранить</button>
+			</div>
+		</div>
+
+		 
+		<div class="column" style="margin-top: 30px;">
+			<div class="tabs" style="margin-bottom: 30px;">
+				<input type="radio" name="tab-btn" id="tab-btn-1" value="" data-toggle="tab" checked>
+				<label for="tab-btn-1">Список</label>
+				<input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+				<label for="tab-btn-2">График</label>
+
+				<div id="content-1">
+					<table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+						<thead style="font-size: 11px; text-align: center;">
+							<tr>
+								<th width="5" >№</th>
+								<th width="20">Покозания</th>
+								<th width="80">Дата измерения</th>
+								<th width="200">Название устройства</th>
+							</tr>
+						</thead>
+						<tbody style="font-size: 11px; text-align: center;">
+							{% if devices %}
+							{% for count, device in devices %}
+							<tr>
+								<td>{{count}}</td>
+								<td>{{device.BO}}</td>
+								<td>{{device.get_time}}</td>
+								<td>{{device.android_mac.mac_adress}}</td>
+							{% endfor %}
+
+							{% else %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+				</div>
+				<div id="content-2">
+					<canvas id="speedChart" width="550" height="250"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="{% static 'js/tabs.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script>
+var speedCanvas = document.getElementById("speedChart");
+
+Chart.defaults.global.defaultFontFamily = "Lato";
+Chart.defaults.global.defaultFontSize = 18;
+
+var dataFirst = {
+    label: "SiO2",
+    data: {{data_BO_for_graph|safe}},
+    lineTension: 0,
+    fill: false,
+    borderColor: 'blue'
+  };
+
+var dataSecond = {
+    label: "min",
+    data: [{% for i in data_BO_for_graph %}{{current_pacient.bo_min}},{% endfor %}],
+    lineTension: 0,
+    fill: true,
+    borderColor: 'red',
+	pointBorderColor: 'transparent',
+  };
+
+
+var speedData = {
+  labels: [{{data_time_for_graph|safe}}],
+  datasets: [dataFirst,dataSecond] //dataSecond
+};
+
+var chartOptions = {
+  legend: {
+    display: true,
+    position: 'top',
+    labels: {
+      boxWidth: 1,
+      fontColor: 'black'
+    }
+  }
+};
+
+var lineChart = new Chart(speedCanvas, {
+  type: 'line',
+  data: speedData,
+  options: chartOptions
+});
+</script>
+
+<script>
+setTimeout(function(){
+   window.location.reload(1);
+}, 50000);
+$('.menu .item').tab();
+
+
+$('#parameters').on('click', function(){
+	let bo_min = $('#bo_min').val();
+	let urls = '/set-params-oxygin/{{current_pacient.id}}/?bo_min=' + bo_min
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+
+
+</script>
+
+{% endblock %}

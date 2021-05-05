@@ -1,0 +1,42 @@
+{% extends '../account/base_template.html' %}
+{% load static %}
+{% block title %}  {% endblock %}
+{% load chek_writer_extras %}
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+
+
+    {% if form.errors %}
+    <p>Ваше имя пользователя и пароль не совпадают. Пожалуйста, попробуйте еще раз</p>
+    {% endif %}
+
+    {% if next %}
+    {% if user.is_authenticated %}
+    <p>У вашей учетной записи нет доступа к этой странице. Чтобы продолжить, войдите в систему с учетной записью, у
+        которой есть доступ.</p>
+    {% else %}
+    <p>Пожалуйста, войдите в свой профиль, чтобы увидеть эту страницу.</p>
+    {% endif %}
+    {% endif %}
+
+
+
+    <form class="ui form" method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="field">
+            <label>Имя пользователя</label>
+            {{ form.username }}
+        </div>
+        <div class="field">
+            <label>Пароль</label>
+            {{ form.password }}
+        </div>
+        <input type="submit" class="ui button" value="Вход" />
+        <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+
+    <p><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
+
+</div>
+{% endblock %}

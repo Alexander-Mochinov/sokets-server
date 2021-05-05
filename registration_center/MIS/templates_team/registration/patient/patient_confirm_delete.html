@@ -1,0 +1,16 @@
+
+{% extends 'base_template.html' %}
+
+{% block title %}Удаление записи{% endblock %}
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+<p>Вы уверены, что хотите удалить пациента
+    ?</p>
+
+<form action="." method="post">
+    {% csrf_token %}
+    <input type="submit" value="Success">
+</form>
+</div>
+{% endblock %}

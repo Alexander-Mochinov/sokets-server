@@ -1,0 +1,642 @@
+{% extends './generate_tmp.html' %}
+{% load static %}
+{% load tags %}
+{% block title %} Давление {% endblock %}
+
+{% block content_sub %}
+
+<div class="ui stackable grid" style="margin-top: 5px">
+	<div class="twenty wide column">
+		
+		<div class="ui stackable grid">
+			<div class="seven wide column">
+				<form method="GET" action="{% url 'tonometer' %}" name="filter">
+					<label for="">Дата: </label><br>
+					<label for=""> <b>C</b></label>
+					<input type="date" name="date_to" value="{% if date_now %}{{date_now}}{% else %}{{datetime}}{% endif %}"><br><br>
+					<label for=""> <b>По</b> </label>
+					<input type="date" name="date"  value="{% if date %}{{date}}{% else %}{{datetime}}{% endif %}"><br><br>
+					<label for="">Время:</label><br>
+					<label for=""> <b>C</b></label>
+					<input type="time" name='time_from' value="{% if time_from_search %}{{time_from_search}}{% endif %}">
+					<label for=""> <b>По</b> </label>
+					<input type="time" name='time_to' value="{% if time_to_search %}{{time_to_search}} {% endif %}"><br><br>
+					<button type="submit" class="ui button">
+						Поиск
+					</button>
+				</form>
+			</div>
+
+			<div class="seven wide column">
+				<div class="checkboxex">
+					<div class="text_filter">Фильтр для графика:</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="crit_check" name="crit_check" onchange="schedule();" checked>
+			 			<label for="crit_check">Границы критических показателей</label>
+					</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="zone_check" name="zone_check" onchange="schedule()">
+			 			<label for="zone_check">Границы зоны риска</label>
+					</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="ma_check" name="ma_check" onchange="schedule()">
+			 			<label for="ma_check">Скользящая средняя</label>
+					</div>
+					<div class="item_checkbox">
+						<input type="checkbox" id="trand_check" name="trand_check" onchange="schedule()">
+			 			<label for="trand_check">Границы развития тенденции</label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="title_pressure">
+			<hr>
+			<div id="title_pressure_content">
+				Систолическое Давление
+			</div>
+			<hr>
+		</div>
+			<div class="ui stackable grid">
+				<div class="seven wide column">
+					<h4>Введите границы критических показателей</h4>
+					<table class="ui table">
+						<tbody>
+							<tr >
+								<td class="collapsing" width="80">
+									Мин. значение
+								</td>
+								<td><input type="number" id="tonometer_hp_min" value="{{current_pacient.tonometer_hp_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+							<tr >
+								<td class="collapsing" width="80">
+									Макс. значение
+								</td>
+								<td><input type="number" id="tonometer_hp_max" value="{{current_pacient.tonometer_hp_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+						</tbody>
+					</table>
+					<button class="ui button" id="parameters_hp" style="float: right;">Сохранить</button>
+				</div>
+	
+				<div class="seven wide column">
+					<h4>Введите границы зоны тонометра</h4>
+					<table class="ui table">
+						<tbody>
+							<tr >
+								<td class="collapsing" width="80">
+									Мин. значение
+								</td>
+								<td><input type="number" id="tonometer_hp_zone_min" maxlength="3" value="{{current_pacient.tonometer_hp_zone_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+							</tr>
+							<tr>
+								<td width="80">
+									Макс. значение
+								</td>
+								<td><input type="number" id="tonometer_hp_zone_max" value="{{current_pacient.tonometer_hp_zone_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+						</tbody>
+					</table>
+					<button class="ui button" id="parameters_zone_hp" style="float: right;">Сохранить</button>
+				</div>
+
+				<div class="seven wide column">
+					<h4>Введите границы тренда тонометра</h4>
+					<table class="ui table">
+						<tbody>
+							<tr >
+								<td class="collapsing" width="80">
+									Мин. значение
+								</td>
+								<td><input type="number" id="tonometer_hp_trand_min" maxlength="3" value="{{current_pacient.tonometer_hp_trand_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+							</tr>
+							<tr>
+								<td width="80">
+									Макс. значение
+								</td>
+								<td><input type="number" id="tonometer_hp_trand_max" value="{{current_pacient.tonometer_hp_trand_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+						</tbody>
+					</table>
+					<button class="ui button" id="parameters_trand_hp" style="float: right;">Сохранить</button>
+				</div>
+
+				<div id="title_pressure">
+					<hr>
+					<div id="title_pressure_content">
+						Диастолическое давление
+					</div>
+					<hr>
+				</div>
+			<div class="ui stackable grid">
+				<div class="seven wide column">
+					<h4>Введите границы критических показателей</h4>
+					<table class="ui table">
+						<tbody>
+							<tr >
+								<td class="collapsing" width="80">
+									Мин. значение
+								</td>
+								<td><input type="number" id="tonometer_lp_min" value="{{current_pacient.tonometer_lp_min}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+							<tr >
+								<td class="collapsing" width="80">
+									Макс. значение
+								</td>
+								<td><input type="number" id="tonometer_lp_max" value="{{current_pacient.tonometer_lp_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+						</tbody>
+					</table>
+					<button class="ui button" id="parameters_lp" style="float: right;">Сохранить</button>
+				</div>
+	
+				<div class="seven wide column">
+					<h4>Введите границы зоны тонометра</h4>
+					<table class="ui table">
+						<tbody>
+							<tr >
+								<td class="collapsing" width="80">
+									Мин. значение
+								</td>
+								<td><input type="number" id="tonometer_lp_zone_min" maxlength="3" value="{{current_pacient.tonometer_lp_zone_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+							</tr>
+							<tr>
+								<td width="80">
+									Макс. значение
+								</td>
+								<td><input type="number" id="tonometer_lp_zone_max" value="{{current_pacient.tonometer_lp_zone_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+						</tbody>
+					</table>
+					<button class="ui button" id="parameters_zone_lp" style="float: right;">Сохранить</button>
+				</div>
+				<div class="seven wide column">
+					<h4>Введите границы тренда тонометра</h4>
+					<table class="ui table">
+						<tbody>
+							<tr >
+								<td class="collapsing" width="80">
+									Мин. значение
+								</td>
+								<td><input type="number" id="tonometer_lp_trand_min" maxlength="3" value="{{current_pacient.tonometer_lp_trand_min}}" style="width: 50px;float: right;"oninput="validity.valid||(value='');"></td>
+							</tr>
+							<tr>
+								<td width="80">
+									Макс. значение
+								</td>
+								<td><input type="number" id="tonometer_lp_trand_max" value="{{current_pacient.tonometer_lp_trand_max}}" style="width: 50px;float: right;" oninput="validity.valid||(value='');"></td>
+							</tr>
+						</tbody>
+					</table>
+					<button class="ui button" id="parameters_trand_lp" style="float: right;">Сохранить</button>
+				</div>
+			</div>
+		</div>
+			
+		 
+		<div class="column" style="margin-top: 30px;">
+			<div class="tabs" style="margin-bottom: 30px;">
+				<input type="radio" name="tab-btn" id="tab-btn-1" value="" data-toggle="tab" checked>
+				<label for="tab-btn-1">Список</label>
+				<input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+				<label for="tab-btn-2">График</label>
+
+				<div id="content-1">
+					<table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+						<thead style="font-size: 11px; text-align: center;">
+							<tr>
+								<th width="5" >№</th>
+								<th width="200">Систолическое давление / Диастолическое давление</th>
+								<th width="80">Дата измерения</th>
+								<th width="200">Название устройства</th>
+							</tr>
+						</thead>
+						<tbody style="font-size: 11px; text-align: center;">
+							{% for count, device in devices %}
+							<tr>
+								<td>{{count}}</td>
+								<td>{{device.HP}} / {{device.LP}}</td>
+								<td>{{device.get_time}}</td>
+								<td>{{device.android_mac.mac_adress}}</td>
+							</tr>
+							{% empty %}
+							<tr>
+								<td colspan="12" style="text-align: center;"> Нет данных !</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				<div id="content-2">
+					<canvas id="speedChart_tonometer" width="550" height="250"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<style scoped>
+	@media screen and (max-width: 767px){
+		.ui.table:not(.unstackable) tbody, .ui.table:not(.unstackable) tr, .ui.table:not(.unstackable) tr>td, .ui.table:not(.unstackable) tr>th {	
+			width: calc(100%) !important;
+			display: inline-flex !important;
+			flex-direction: column;
+		}
+	}
+</style>
+<script src="{% static 'js/tabs.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script src="{% static 'js/show_data_in_graph.js' %}"></script>
+<script>
+var lineChart;
+var speedCanvas = document.getElementById("speedChart_tonometer");
+let data_tonometer = {
+		// DATA 1
+		data : {{data_HP_for_graph|safe}},
+		name : "Систолическое",
+        min : {{current_pacient.tonometer_hp_min}},
+        max :  {{current_pacient.tonometer_hp_max}},
+        zone_min : {{current_pacient.tonometer_hp_zone_min}},
+        zone_max : {{current_pacient.tonometer_hp_zone_max}},
+		trand_min : {{current_pacient.tonometer_hp_trand_min}},
+        trand_max : {{current_pacient.tonometer_hp_trand_max}},
+		ma : {{data_MA_HP|safe}},
+		// DATA 2
+		data_2 : {{data_LP_for_graph|safe}},
+		name_2 : "Диастолическим",
+        min_2 : {{current_pacient.tonometer_lp_min}},
+        max_2 :  {{current_pacient.tonometer_lp_max}},
+        zone_min_2 : {{current_pacient.tonometer_lp_zone_min}},
+        zone_max_2 : {{current_pacient.tonometer_lp_zone_max}},
+		trand_min_2 : {{current_pacient.tonometer_lp_trand_min}},
+        trand_max_2 : {{current_pacient.tonometer_lp_trand_max}},
+		ma_2 : {{data_MA_LP|safe}},
+		// General DATA
+        data_time : [{{data_time_for_graph|safe}}],
+		speedCanvas : speedCanvas,
+	}
+
+var tonometer_graph = new Show_data(data_tonometer)
+
+document.addEventListener("DOMContentLoaded", () => {
+
+	
+
+	lineChart = tonometer_graph.show(true)
+	// Chart.defaults.global.defaultFontFamily = "Lato";
+	// Chart.defaults.global.defaultFontSize = 18;
+
+	// var dataFirst = {
+	// 	label: "",
+	// 	data: {{data_HP_for_graph|safe}},
+	// 	lineTension: 0,
+	// 	fill: true,
+	// 	borderColor: 'blue'
+	// };
+
+	// var dataSecond = {
+	// 	label: "",
+	// 	data: {{data_LP_for_graph|safe}},
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+
+	// var speedData = {
+	// 	labels: [{{data_time_for_graph|safe}}],
+	// 	datasets: [dataFirst,dataSecond] 
+	// }
+
+
+	// var chartOptions = {
+	// legend: {
+	// 	display: true,
+	// 	position: 'top',
+	// 	labels: {
+	// 	boxWidth: 1,
+	// 	fontColor: 'black'
+	// 	}
+	// }
+	// };
+	// lineChart = new Chart(speedCanvas, {
+	// type: 'line',
+	// data: speedData,
+	// options: chartOptions
+	// });
+});
+
+function schedule(){
+	var crit_check = document.getElementById('crit_check').checked;
+	var zone_check = document.getElementById('zone_check').checked;
+	var ma_check = document.getElementById('ma_check').checked;
+	var trand_check = document.getElementById('trand_check').checked;
+
+	lineChart.destroy()
+	lineChart = tonometer_graph.show(crit_check, zone_check, ma_check, trand_check)
+
+	// Chart.defaults.global.defaultFontFamily = "Lato";
+	// Chart.defaults.global.defaultFontSize = 18;
+
+	// var dataFirst = {
+	// 	label: "",
+	// 	data: {{data_HP_for_graph|safe}},
+	// 	lineTension: 0,
+	// 	fill: true,
+	// 	borderColor: 'blue'
+	// };
+
+	// var dataSecond = {
+	// 	label: "",
+	// 	data: {{data_LP_for_graph|safe}},
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data3min = {
+	// 	label: "min",
+	// 	data: [{% for i in data_HP_for_graph %}{{current_pacient.tonometer_hp_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data3max = {
+	// 	label: "max",
+	// 	data: [{% for i in data_HP_for_graph %}{{current_pacient.tonometer_hp_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data4min = {
+	// 	label: "min",
+	// 	data: [{% for i in data_LP_for_graph %}{{current_pacient.tonometer_lp_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data4max = {
+	// 	label: "max",
+	// 	data: [{% for i in data_LP_for_graph %}{{current_pacient.tonometer_lp_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'red',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data5min = {
+	// 	label: "min_zone",
+	// 	data: [{% for i in data_HP_for_graph %}{{current_pacient.tonometer_hp_zone_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data5max = {
+	// 	label: "max_zone",
+	// 	data: [{% for i in data_HP_for_graph %}{{current_pacient.tonometer_hp_zone_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data6min = {
+	// 	label: "min_zone",
+	// 	data: [{% for i in data_HP_for_graph %}{{current_pacient.tonometer_lp_zone_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data6max = {
+	// 	label: "max_zone",
+	// 	data: [{% for i in data_HP_for_graph %}{{current_pacient.tonometer_lp_zone_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent',
+	// };
+
+	// var data7min = {
+	// 	label: "trand_min",
+	// 	data: [{% for i in data_HP_for_graph %} {{current_pacient.tonometer_hp_trand_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var data7max = {
+	// 	label: "trand_max",
+	// 	data: [{% for i in data_HP_for_graph %} {{current_pacient.tonometer_hp_trand_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var data8min = {
+	// 	label: "trand_min",
+	// 	data: [{% for i in data_HP_for_graph %} {{current_pacient.tonometer_lp_trand_min}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// var data8max = {
+	// 	label: "trand_max",
+	// 	data: [{% for i in data_HP_for_graph %} {{current_pacient.tonometer_lp_trand_max}},{% endfor %}],
+	// 	lineTension: 0,
+	// 	fill: false,
+	// 	borderColor: 'green',
+	// 	pointBorderColor: 'transparent'
+	// };
+
+	// arr_datasets = [dataFirst, dataSecond]
+
+	// //Границы критических показателей
+	// if(crit_check.checked){
+	// 	arr_datasets.push(data3min);
+	// 	arr_datasets.push(data3max);
+	// 	arr_datasets.push(data4min);
+	// 	arr_datasets.push(data4max);
+	// }
+
+	// //Границы развития тенденции
+	// if(trand_check.checked){
+	// 	arr_datasets.push(data7min);
+	// 	arr_datasets.push(data7max);
+	// 	arr_datasets.push(data8min);
+	// 	arr_datasets.push(data8max);
+	// }
+
+	// //Границы зоны риска
+	// if(zone_check.checked){
+	// 	arr_datasets.push(data5min);
+	// 	arr_datasets.push(data5max);
+	// 	arr_datasets.push(data6min);
+	// 	arr_datasets.push(data6max);
+	// }
+
+
+	// var speedData = {
+	// labels: [{{data_time_for_graph|safe}}],
+	// datasets: arr_datasets,
+	// };
+
+	// var chartOptions = {
+	// legend: {
+	// 	display: true,
+	// 	position: 'top',
+	// 	labels: {
+	// 	boxWidth: 1,
+	// 	fontColor: 'black'
+	// 	}
+	// }
+	// };
+	// lineChart.destroy();
+	// lineChart = new Chart(speedCanvas, {
+	// type: 'line',
+	// data: speedData,
+	// options: chartOptions
+	// });
+}
+</script>
+
+<script>
+setTimeout(function(){
+   window.location.reload(1);
+}, 50000);
+$('.menu .item').tab();
+
+
+$('#parameters_hp').on('click', function(){
+	let tonometer_hp_min = $('#tonometer_hp_min').val();
+ 	let tonometer_hp_max = $('#tonometer_hp_max').val();
+	//if (tonometer_hp_min < 0) {tonometer_hp_min = 0}
+	let urls = '/set-params-tonometer_hp/{{current_pacient.id}}/?tonometer_hp_min=' + tonometer_hp_min + '&tonometer_hp_max=' + tonometer_hp_max
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_trand_hp').on('click', function(){
+	let tonometer_hp_trand_max = $('#tonometer_hp_trand_max').val();
+	let tonometer_hp_trand_min = $('#tonometer_hp_trand_min').val();
+	console.log(tonometer_hp_trand_max)
+	console.log(tonometer_hp_trand_min)
+	let urls = '/set-params-trand-tonometer_hp/{{current_pacient.id}}/?tonometer_hp_trand_max=' + tonometer_hp_trand_max + '&tonometer_hp_trand_min=' + tonometer_hp_trand_min
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_zone_hp').on('click', function(){
+	let tonometer_hp_zone_min = $('#tonometer_hp_zone_min').val();
+ let tonometer_hp_zone_max = $('#tonometer_hp_zone_max').val();
+	//if (tonometer_hp_min < 0) {tonometer_hp_min = 0}
+	let urls = '/set-params-zone-tonometer_hp/{{current_pacient.id}}/?tonometer_hp_zone_min=' + tonometer_hp_zone_min + '&tonometer_hp_zone_max=' + tonometer_hp_zone_max
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_lp').on('click', function(){
+	let tonometer_lp_min = $('#tonometer_lp_min').val();
+ 	let tonometer_lp_max = $('#tonometer_lp_max').val();
+	//if (tonometer_lp_min < 0) {tonometer_lp_min = 0}
+	let urls = '/set-params-tonometer_lp/{{current_pacient.id}}/?tonometer_lp_min=' + tonometer_lp_min + '&tonometer_lp_max=' + tonometer_lp_max
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_trand_lp').on('click', function(){
+	let tonometer_lp_trand_max = $('#tonometer_lp_trand_max').val();
+	let tonometer_lp_trand_min = $('#tonometer_lp_trand_min').val();
+	console.log(tonometer_lp_trand_max)
+	console.log(tonometer_lp_trand_min)
+	let urls = '/set-params-trand-tonometer_lp/{{current_pacient.id}}/?tonometer_lp_trand_max=' + tonometer_lp_trand_max + '&tonometer_lp_trand_min=' + tonometer_lp_trand_min
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+$('#parameters_zone_lp').on('click', function(){
+	let tonometer_lp_zone_min = $('#tonometer_lp_zone_min').val();
+ 	let tonometer_lp_zone_max = $('#tonometer_lp_zone_max').val();
+	//if (tonometer_lp_min < 0) {tonometer_lp_min = 0}
+	let urls = '/set-params-zone-tonometer_lp/{{current_pacient.id}}/?tonometer_lp_zone_min=' + tonometer_lp_zone_min + '&tonometer_lp_zone_max=' + tonometer_lp_zone_max
+	$.ajax({
+      type: 'GET',
+      url: urls,
+      success: function (data) { 
+		alert('Данные были сохранены !')
+	},
+      error: function (jqXHR, text, error) {
+        alert(error);
+    }
+    }); return false;
+});
+
+</script>
+<style>
+	#title_pressure{
+		width: 80%;
+		margin: 20px;
+		text-align: center;
+		font-size: 18px;
+	}
+	#title_pressure_content{
+		width: 100%;
+		margin: 10px;
+		text-align: center;
+		font-size: 18px;
+	}
+</style>
+{% endblock %}

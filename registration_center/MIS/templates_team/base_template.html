@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load chek_writer_extras %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/sinematic.min.css' %}">
+    <script src="{% static 'js/jq2.js' %}"></script>
+
+    {% block script %}{% endblock %}
+    <title>{% block title %}{% endblock %}</title>
+
+</head>
+<body>
+    <nav role='navigation'>
+        <img src="{% static 'img/logo.png' %}" alt="" style="padding-top: 12px;
+        max-width: 222px;
+        min-width: 180px;
+        width: 20%;
+        float: left;">
+        <ul class='left-menu'>
+            <li><a href="{% url 'main_page' %}"> Мед. учреждения</a>
+                <ul class="m-auto">
+                    <li>
+                        <a href="{% url 'main_page' %}" class="header item">Список Мед. Учреждений</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'PolyclinicCreate' %}" class="header item">Добавить Мед.Учреждение</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="">Пациенты</a>
+                <ul class="m-auto">
+                    <li>
+                        <a href="">Пациенты всех поликлиник</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'attach_for_operator_as_critical_value' %}">Критические пациенты всех поликлиник</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="{% url 'list_pacient' %}">Заявки</a>
+                <ul class="m-auto">
+                    <li>
+                        <a href="{% url 'list_pacient' %}">Список заявок</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'waiting_list' %}">Лист ожиданий</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'SearchFilter' %}">Добавить заявку</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'hospital_patient_list' %}">Стационар</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'appointment_with_a_doctor' %}">Доступные талоны</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="">Логи</a>
+                <ul class="m-auto">
+                    <li>
+                        <a href="{% url 'send_mail_logs' %}">Отправка E-mail</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'detail_actions' %}">Редирект</a>
+                    </li>
+
+                </ul>
+            </li>
+            <li><a href="{% url 'list_ses' %}">Журнал СЭС</a></li>
+            <li><a href="{% url 'list_of_complaints' %}">Жалобы</a></li>
+            <li><a href="{% url 'list_of_humans_departaments' %}">Отдел кадров</a>
+                <ul class="m-auto">
+                    <li>
+                        <a href="{% url 'list_of_humans_departaments' %}">Список заявок</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'human_resources_department_reate' %}">Оставить заявку</a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li>
+                <a href="{% url 'tracking_info' %}">Tracking</a>
+            </li>
+        </ul>
+        <ul class="right-menu">
+            <li>
+                {% if request.user.is_authenticated  %}
+                <a href="{% url 'logout' %}" class="header item">Выйти</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="header item">Войти</a>
+                {% endif %}
+            </li>
+        </ul>   
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+    </nav>
+        {% if  'Pacient' in group.name.all  %}
+        <div id="maincontent" class="ui main container-fluid">
+            <div class="ui stackable grid">
+                <div class="ui main container" style="text-align: center;">
+                    <h3>Контент не доступен </h3>
+                </div>
+            </div>
+        </div>
+        {% else %}
+            {% block content %}
+            {% endblock %}
+         {% endif %}
+
+        <div class="menu">
+        <div id="burg_nav">
+            <ul>
+                <li class="show_item"><a href="{% url 'main_page' %}"> Мед. учреждения</a>
+                    <ul class="m-auto" class="ul_sub_menu">
+                        <li>
+                            <a href="{% url 'main_page' %}" class="header item">Список Мед. Учреждений</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'PolyclinicCreate' %}" class="header item">Добавить Мед.Учреждение</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="show_item">
+                    <a href="">Пациенты</a>
+                    <ul class="m-auto" class="ul_sub_menu">
+                        <li>
+                            <a href="">Пациенты всех поликлиник</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'attach_for_operator_as_critical_value' %}">Критические пациенты всех поликлиник</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="show_item"><a href="{% url 'list_pacient' %}">Заявки</a>
+                    <ul class="m-auto" class="ul_sub_menu">
+                        <li>
+                            <a href="{% url 'list_pacient' %}">Список заявок</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'waiting_list' %}">Лист ожиданий</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'SearchFilter' %}">Добавить заявку</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'hospital_patient_list' %}">Стационар</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'appointment_with_a_doctor' %}">Доступные талоны</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="show_item"><a href="">Логи</a>
+                    <ul class="m-auto" class="ul_sub_menu">
+                        <li>
+                            <a href="{% url 'send_mail_logs' %}">Отправка E-mail</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'detail_actions' %}">Редирект</a>
+                        </li>
+    
+                    </ul>
+                </li>
+                <li class="show_item"><a href="{% url 'list_ses' %}">Журнал СЭС</a></li>
+                <li class="show_item"><a href="{% url 'list_of_complaints' %}">Жалобы</a></li>
+                <li class="show_item"><a href="{% url 'list_of_humans_departaments' %}">Отдел кадров</a>
+                    <ul class="m-auto" class="ul_sub_menu">
+                        <li>
+                            <a href="{% url 'list_of_humans_departaments' %}">Список заявок</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'human_resources_department_reate' %}">Оставить заявку</a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <li class="show_item">
+                    <a href="{% url 'tracking_info' %}">Tracking</a>
+                </li>
+            </ul>
+            <ul class="right-menu">
+                <li>
+                    {% if request.user.is_authenticated  %}
+                    <a href="{% url 'logout' %}" class="header item">Выйти</a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="header item">Войти</a>
+                    {% endif %}
+                </li>
+            </ul>   
+        <li class="show_item">
+            <a href="{% static 'apk/app-debug_main_api.apk' %}" download>Скачать приложение</a>
+        </li>
+        <div class="text_header" style="text-align: center;">
+            <span style="letter-spacing: 3px;">+7(846)307-77-07</span> 
+            <br>
+            Звоните, мы с радостью<br> ответим вам!
+        </div>
+    </div>
+ {% if request.user.is_authenticated and request.user|is_connected_phone %}
+        <div id="chat-circle" class="btn btn-raised" style="display: flex;">
+        <img src="{% static 'img/pho.png' %}" alt="" style="width: 30px;
+          height: 30px;">
+        </div>
+  
+		  {% endif %} 
+</body>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const menu = document.querySelector('.menu'),
+      hamburger = document.querySelector('.hamburger');
+  
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('hamburger_active');
+        menu.classList.toggle('menu_active');
+      });
+    })
+ </script>
+<style>
+
+#burg_nav ul li ul{
+  display:none;
+  background-color: #3a3a3a;
+  animation-duration: 0.5s;
+  animation-name: showlist;
+}
+
+@keyframes showlist {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0%);
+  }
+}
+#burg_nav ul li:hover > ul 
+{
+  background-color: #3a3a3a;
+  display:inherit;
+}
+
+#burg_nav ul ul li {
+  min-width:170px;
+  float:none;
+  display:list-item;
+  position: relative;
+}
+
+#burg_nav li ul li{
+    padding: 10px;
+}
+
+.menu{
+  position: fixed;
+  flex-direction: column;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background-color: #4b4b4b;
+  z-index: 10000;
+  color: white;
+  display: none;
+}
+
+.menu_active{
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  background-color: #4b4b4b;
+  z-index: 10000;
+  color: white;
+}
+
+.menu .show_item{
+  text-align: center;
+  font-size: medium;
+  margin-bottom: 30px;
+}
+
+.menu a{
+  font-size: medium;
+  color: white;
+}
+
+.menu a:hover{
+  color: rgb(112, 169, 255);
+}
+
+.menu li .reg_auth{
+  font-size: medium;
+  vertical-align: middle;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.menu li .reg_auth #slash{
+  margin: 0 10px;
+}
+
+.hamburger{
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 21px;
+  display: none;
+}
+
+.hamburger_active{
+  margin-top: 10px;
+}
+
+
+.hamburger_active span:nth-child(1){
+  transform: rotate(-45deg);
+  margin-top: -6px;
+}
+
+.hamburger_active span:nth-child(2){
+  display: none;
+}
+
+.hamburger_active span:nth-child(3){
+  transform: rotate(45deg);
+  margin-top: -6px;
+}
+
+.hamburger span{
+  width: 100%;
+  height: 2px;
+  background-color: black;
+  display: block;
+  margin-bottom: 5px;
+  transition: 0.2s all;
+}
+
+@media screen and (max-width: 1120px){
+  .hamburger{
+    display: block;
+  }
+  .hamburger span{
+    color: black;
+  } 
+
+  #main_nav ul{
+    display: none;
+    
+  }
+
+  .right-menu{
+    display: none;
+  }
+
+  .left-menu{
+    display: none;
+  }
+}
+
+@media screen and (min-width: 1121px){
+	.menu_active{
+      display: none;
+    }
+}
+</style>
+</html>

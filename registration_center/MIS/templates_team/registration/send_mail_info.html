@@ -1,0 +1,78 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Пользовательская информация {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}
+
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="ui grid">
+				<div class="left floated six wide column" style="    text-align: left;">
+					<form method="GET" action="{% url 'detail_actions' %}">
+						<label for="">Дата: </label><br>
+						<input type="date" name="date" id="search" value="{{date_now}}" style="width: 235px;"><br><br>
+						<label for="">Время:</label><br>
+						<label for=""> <b>C</b></label>
+						<input type="time" name='time_from' value="{{time_from_search}}">
+						<label for=""> <b>По</b> </label>
+						<input type="time" name='time_to' value="{{time_to_search}}"><br><br>
+
+						<button type="submit">
+							Найти запись
+						</button>
+						<button>
+							<a href="{% url 'detail_actions' %}">Сбросить фильтр</a>
+						</button>
+					</form>
+
+				</div>
+				<div class="center floated ten wide column">
+					<div class="main-title">
+						<h3>Действия на сайте, логи по отправке писем!</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Id заявки</th>
+							<th>Оператор</th>
+							<th>Время отправки письма</th>
+							<th>Тема</th>
+							<th>От кого</th>
+							<th>Кому</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{% if mail_list %}
+						{% for mail in mail_list %}
+						<tr>
+							<td>{{mail.index}}</td>
+							<td>{{mail.id|get_id_note}}</td>
+							<td>{{mail.activity.user}}</td>
+							<td>{{mail.activity.recording_time}}</td>
+							<td>{{mail.theme}}</td>
+							<td>{{mail.from_user}}</td>
+							<td>{{mail.to_user}}</td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+{% endblock %}

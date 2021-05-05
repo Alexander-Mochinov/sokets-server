@@ -1,0 +1,119 @@
+{% extends '../base_account.html' %}
+{% load static %}
+{% block title %} Регистрация пользователя {% endblock %}
+
+{% block content %}
+
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="main-title">
+
+			</div>
+			<div class="ui grid">
+
+				<div class="left floated six wide column" style="    text-align: left;">
+					<form method="POST" action="{% url 'hospital_patient_list' forbidden %}">
+						{% csrf_token %}
+						<label for="">Дата: </label><br>
+						<label for=""> <b>C</b></label>
+						<input type="date" name="date_to" id="search" value="{{date_to}}">
+						<label for=""> <b>По</b> </label>
+						<input type="date" name="date" id="search"
+							value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}"><br><br>
+						<label for="">Время:</label><br>
+						<label for=""> <b>C</b></label>
+						<input type="time" name='time_from'>
+						<label for=""> <b>По</b> </label>
+						<input type="time" name='time_to'><br><br>
+						{% if forbidden %}
+						{% else %}
+						<label for="">Мед. учреждение</label><br>
+						<select name="select_polyclinic">
+							<option value="">-----</option>
+							{% for i in option_data %}
+							<option value="{{i.id}}">{{i}}</option>
+							{% endfor %}
+						</select><br><br>
+						{% endif %}
+						<button type="submit">
+							Найти запись
+						</button>
+					</form>
+
+				</div>
+				<div class="right floated six wide column" style="align-items: center;
+                position: relative;
+                display: grid;
+                text-align: center;">
+					<div class="main-title">
+						<h3>Лист ожидания</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two">
+					<thead>
+						<tr>
+                                                        <th>№</th>
+                                                        <th>Ф.И.О.</th>
+                                                        <th>Дата рождения</th>
+                                                        <th>Номер полиса ОМС</th>
+                                                        <th>Aдрес проживания</th>
+                                                        <th>Контактный номер телефона</th>
+                                                        <th onclick="sortTable(0)">Поликлиника</th>
+                                                        <th id='dateCol' style='cursor:pointer;'>Дата поступления</th>
+                                                        <th>Планируемая дата выписки</th>
+                                                        <th>Дата выписки</th>
+                                                        <th>Диагноз</th>
+                                                        <th>Состояние</th>
+                                                </tr>
+                                        </thead>
+
+                                        <tbody>
+                                                {% if admissions %}
+                                                {% for count, adm in admissions %}
+                                                <tr>
+                                                        <td>{{count}}</td>
+                                                        <td>{{adm.patient}}</td>
+                                                        <td>{{adm.patient.birth_date}}</td>
+                                                        <td>{{adm.patient.OMS}}</td>
+                                                        <td>{{adm.patient.address}}</td>
+                                                        <td>{{adm.patient.phone_number}}</td>
+                                                        <td>{{adm.hospital}}</td>
+                                                        <td>{{adm.admission_date}}</td>
+                                                        <td>{{adm.discharge_planned_date|default_if_none:"-"}}</td>
+                                                        <td>{{adm.discharge_date|default_if_none:"-"}}</td>
+                                                        <td>{{adm.diagnosis}}</td>
+                                                        <td>{{adm.state}}</td>						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script>
+	$(document).ready(function () {
+		$('#dateCol').click(function () {
+			sortTable_Date(6);
+		});
+	});
+
+</script>
+{% if autoupdate %}
+<script>
+	setTimeout(function () {
+		window.location.reload(1);
+	}, 20000);
+</script>
+{% endif %}
+{% endblock %}

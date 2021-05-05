@@ -1,0 +1,166 @@
+{% extends './generate_tmp.html' %}
+{% load static %}
+{% block title %} Личная карта пациента {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}
+
+<!-- <div id="maincontent" class="ui main container" style="margin-top: 130px;"> -->
+	<div class="ui stackable grid">
+		<div class="twenty wide column"></div>
+		<div class="ui equal width form">
+			<h3>Личные данные</h3>
+
+
+
+
+			<form action="." method="post" enctype="multipart/form-data">
+				<div class="profile__form-datas">
+					{% csrf_token %}
+					<div class="fields">
+						<div class="field">
+							<label>Логин</label>
+							{{user_form.username}}
+						</div>
+						<div class="field">
+							<label>Имя</label>
+							{{ profile_form.name }}
+						</div>
+						<div class="field">
+							<label>Фамилия</label>
+							{{ profile_form.surname }}
+						</div>
+						<div class="field">
+							<label>Отчество</label>
+							{{ profile_form.patronymic }}
+						</div>
+					</div>
+					<div class="fields">
+						<div class="field">
+							<label>Дата рождения</label>
+							{{profile_form.birth_date}}
+						</div>
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{profile_form.OMS.errors}}
+							</div>
+							<label>Полис ОМС</label>
+							{{profile_form.OMS}}
+						</div>
+					</div>
+
+
+
+
+
+
+					<div class="fields">
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{profile_form.gender.errors}}
+							</div>
+							<label>Пол</label>
+							{{profile_form.gender}}
+						</div>
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{profile_form.type_blood.errors}}
+							</div>
+							<label>Тип крови</label>
+							{{profile_form.type_blood}}
+						</div>
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{profile_form.weight.errors}}
+							</div>
+							<label>Рост</label>
+							{{profile_form.weight}}
+						</div>
+						<div class="field">
+							<div class="alert alert-danger" style="font-size: 15px; color: red;">
+								{{profile_form.growth.errors}}
+							</div>
+							<label>Вес</label>
+							{{profile_form.growth}}
+						</div>
+					</div>
+
+
+
+					<div class="field">
+						<!-- <div class="alert alert-danger" style="font-size: 15px; color: red;">
+							{{profile_form.phone_number.errors}}
+						</div> -->
+						<label>Телефон</label>
+						{{ profile_form.phone_number}}
+					</div>
+					<div class="field">
+						<label>E-mail</label>
+						{{ profile_form.email }}
+					</div>
+					<div class="field">
+						<label>Старый пароль</label>
+						{{ user_form.old_pass }}
+					</div>
+					<div class="field">
+						<label>Новый пароль</label>
+						{{ user_form.new_pass }}
+					</div>
+					<div class="field">
+						<label>Повторите пароль</label>
+						{{ user_form.new_pass_rep }}
+					</div>
+
+					<hr>
+					<h3>Адрес проживания</h3>
+					{{profile_place_of_residence}}
+					<br>
+					<hr>
+					<h3>Адрес прописки</h3>
+					{{profile_residence_address}}
+					<br>
+					<hr>
+					<h3>Информация о работе</h3>
+					{{profile_information_about_work}}
+
+					<br>
+					<hr>
+					<h3>Гражданство и паспортные данные</h3>
+					<div class="field">
+						<label>Гражданство:</label>
+						{{ profile_form.сitizenship }}
+					</div>
+					<div class="field">
+						<label>Национальность:</label>
+						{{ profile_form.nationality }}
+					</div>
+					<div class="field">
+						<label>Серия/Номер паспорта:</label>
+						{{ profile_form.passport_serial_number }}
+					</div>
+					<div class="field">
+						<label>Кем выдан (ввод по паспорту):</label>
+						{{ profile_form.issued_by }}
+					</div>
+					<div class="field">
+						<label>Действует до:</label>
+						{{ profile_form.valid_until }}
+					</div>
+					<div class="field">
+						<label>Идентификационный номер:</label>
+						{{ profile_form.identification_number }}
+					</div>
+					<br>
+					<br>
+					<button type="submit">Подтвердить</button>
+					<br>
+					<br>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{{ profile_place_of_residence.media }}
+
+<!-- </div> -->
+{% endblock %}

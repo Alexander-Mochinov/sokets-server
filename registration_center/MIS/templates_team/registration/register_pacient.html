@@ -1,0 +1,61 @@
+{% extends './patient/personal_area/generate_tmp.html' %}
+{% load static %}
+{% block title %} Регистрация нового пользователя {% endblock %}
+{% load chek_writer_extras %}
+
+{% block content %}
+<!-- <div id="maincontent" class="ui main container" style="margin-top: 130px;"> -->
+	<div class="ui stackable grid">
+		<div class="three wide column"></div>
+		<div class="ten wide column">
+			{% if errors %}
+			{{ errors }}
+			{% endif %}
+			{{user_form.errors}}
+			<form action="{% url 'register_pacient' %}" method="POST">
+				{% csrf_token %}
+				<div class="ui equal width form">
+					<div class="fields">
+						<div class="field">
+							<label>Логин</label>
+							{{user_form.username}}
+						</div>
+
+					</div>
+					<div class="fields">
+						<div class="field">
+							<label>Имя</label>
+							<input type="text" name="name" placeholder="" required>
+						</div>
+						<div class="field">
+							<label>Фамилия</label>
+							<input type="text" name="surname" placeholder="" required>
+						</div>
+						<div class="field">
+							<label>Отчество</label>
+							<input type="text" name="patronymic" placeholder="" required>
+						</div>
+					</div>
+					<div class="fields">
+						<div class="field">
+							<label>Телефон</label>
+							<input type="text" placeholder="" name="phone_number" value="+7" required>
+						</div>
+					</div>
+					<div class="fields">
+						<div class="field">
+							<label>E-mail</label>
+							{{user_form.email}}
+						</div>
+					</div>
+					<button type="submit" class="ui submit button">Создать аккаунт</button>
+				</div>
+			</form>
+
+		</div>
+		<div class="three wide column"></div>
+	</div>
+<!-- </div> -->
+
+<script src="{% static 'js/limitInput.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends '../base_account.html' %}
+{% load static %}
+
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="main-title">
+
+			</div>
+			<div class="ui grid">
+
+				<div class="left floated six wide column" style="    text-align: left;">
+					<form method="GET" action="{% url 'list_of_complaints' forbidden %}">
+						<label for="">Дата: </label><br>
+						<label for=""> <b>C</b></label>
+						<input type="date" name="date_to" id="search" value="{{date_to}}">
+						<label for=""> <b>По</b> </label>
+						<input type="date" name="date" id="search"
+							value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}"><br><br>
+						<label for="">Время:</label><br>
+						<label for=""> <b>C</b></label>
+						<input type="time" name='time_from' value="{{time_from_search}}">
+						<label for=""> <b>По</b> </label>
+						<input type="time" name='time_to' value="{{time_to_search}}"><br><br>
+						{% if forbidden %}
+						{% else %}
+						<label for="">Мед. учреждение</label><br>
+						<select name="select_polyclinic">
+							<option value=""></option>
+							{% for i in polyclinic_list %}
+							<option value="{{i.id}}" {% if i.id == option_data_id %} selected="selected" {% endif %}>
+								{{i}}</option>
+							{% endfor %}
+						</select>
+						{% endif %}<br><br>
+						<button type="submit">
+							Найти запись
+						</button>
+					</form>
+
+				</div>
+				<div class="right floated six wide column" style="align-items: center;
+                position: relative;
+                display: grid;
+                text-align: center;">
+					<div class="main-title">
+						<h3>Список жалоб</h3>
+					</div>
+				</div>
+				<table class="ui small very compact unstackable selectable olive table" id="myTable_two"
+					style="text-align: center;">
+					<thead>
+						<tr>
+							<th>№</th>
+							<th>Ф.И.О.</th>
+							<th>Контактный номер</th>
+							<th>Учреждение</th>
+							<th id='dateCol' style='cursor:pointer;'>Время записи</th>
+							<th>Жалоба</th>
+							<th>Оператор</th>
+							<th>
+								Обработанна
+							</th>
+							<!-- <th>Действие</th> -->
+						</tr>
+					</thead>
+
+					<tbody>
+						{% if complaints %}
+						{% for count, complaint in complaints %}
+						<tr>
+							<td>{{count}}</td>
+							<td>{{complaint.fio}}</td>
+							<td>{{complaint.phone}}</td>
+							<td>{% if complaint.institution %}{{complaint.institution}}{% else %} ----- {% endif %}
+							</td>
+							<td>{{complaint.recording_time|date:"Y-m-d G:i"}}</td>
+							<td>{{complaint.text|safe}}</td>
+							<td>{% if complaint.operator  %}{{complaint.operator}}{% else %} ----- {% endif %}</td>
+							<td>
+								{% if complaint.сomplaint_forwarded %}
+								<a href="{% url 'cheked_write_complaints' complaint.id %}"><img
+										src="{% static 'img/check.svg' %}" alt="" style="width: 15% !important"></a>
+								{% else %}
+								<a href="{% url 'cheked_write_complaints' complaint.id %}"><img
+										src="{% static 'img/ban.svg' %}" alt="" style="width: 15% !important"></i></a>
+								{% endif %}
+							</td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td colspan="12" style="text-align: center;"> Нет данных !</td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script>
+	$(document).ready(function () {
+		$('#dateCol').click(function () {
+			sortTable_Date(4);
+		});
+	});
+</script>
+{% if autoupdate %}
+<script>
+	setTimeout(function () {
+		window.location.reload(1);
+	}, 20000);
+</script>
+{% endif %}
+{% endblock %}

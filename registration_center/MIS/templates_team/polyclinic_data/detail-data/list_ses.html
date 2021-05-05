@@ -1,0 +1,126 @@
+{% extends '../base_account.html' %}
+{% load static %}
+{% block title %} Регистрация пользователя {% endblock %}
+
+{% block content %}
+
+
+
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="twenty wide column">
+			<div class="main-title">
+					<h3>Журнал СЭС</h3>
+			</div>
+			<div class="ui grid">
+				<div class="left floated six wide column" style="    text-align: left;">
+					<form method="POST" action="{% url 'list_ses' %}">
+						{% csrf_token %}
+						<label for="">Дата: </label><br>
+						<label for=""> <b>C</b></label>
+						<input type="date" name="date_to" id="search" value="{{date_to}}">
+						<label for=""> <b>По</b> </label>
+						<input type="date" name="date" id="search"
+							value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}"><br><br>
+						<label for="">Время:</label><br>
+						<label for=""> <b>C</b></label>
+						<input type="time" name='time_from' value="{{time_from_search}}">
+						<label for=""> <b>По</b> </label>
+						<input type="time" name='time_to' value="{{time_to_search}}"><br><br>
+						{% if forbidden %}
+						{% else %}
+						<label for="">Мед. учреждение</label><br>
+						<select name="select_polyclinic">
+							<option value="">-----</option>
+							{% for i in option_data %}
+							<option value="{{i.id}}">{{i}}</option>
+							{% endfor %}
+						</select><br><br>
+						{% endif %}
+						<button type="submit">
+							Найти запись
+						</button>
+					</form>
+
+				</div>
+				<div class="right floated six wide column" style="">
+					<a href="{% url 'add_ses_notes_for_polyclinic' forbidden %}"><button class="ui right floated button">Добавить запись</button></a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<div id="maincontent" class="ui main container-fluid">
+    <div class="ui container-fluid" style="padding: 35px;">
+		<table class="ui small very compact unstackable selectable olive table" id="myTable_two">
+			<thead>
+				<tr>
+					<th width="10">№</th>
+					<th width="120">Ф.И.О.</th>
+					<th width="90">Дата рождения</th>
+					<th width="120">Aдрес проживания</th>
+					<th width="90">Контактный номер телефона</th>
+					<th width="90" onclick="sortTable(0)">Место госпитализации</th>
+					<th width="90">Прикрепление к лпу</th>
+					<th width="90" id='dateCol' style='cursor:pointer;'>Время записи</th>
+					<th width="90">Оператор</th>
+					<th width="45">Действие</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{% if waiting_list %}
+				{% for count, person in waiting_list %}
+				<tr>
+					<td>{{count}}</td>
+					<td>{{person.surname}} {{person.name}} {{person.patronymic}}</td>
+					<td>{{person.date_of_birth}}</td>
+					<td>{{person.street}} {{person.house}} {{person.apartment}}</td>
+					<td>{{person.phone_number}}</td>
+					<td>{{person.attachment_to_the_medical_device}}</td>
+					<td>{{person.place_of_hospitalization}}</td>
+					<td>{{person.recording_time|date:"Y-m-d G:i"}}</td>
+					<td>{% if person.operator  %}{{person.operator}}{% else %} ----- {% endif %}</td>
+					<td>
+						<a href="{% url 'SESUpdate' person.pk %}">
+							<img src="{% static 'img/set.png' %}" alt="" style="width: 18px;">
+						</a>
+					</td>
+				</tr>
+				{% endfor %}
+				{% else %}
+				<tr>
+					<td colspan="12" style="text-align: center;"> Нет данных !</td>
+				</tr>
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+
+
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script>
+	$(document).ready(function () {
+		$('#dateCol').click(function () {
+			sortTable_Date(6);
+		});
+	});
+
+</script>
+{% if autoupdate %}
+<script>
+	setTimeout(function () {
+		window.location.reload(1);
+	}, 20000);
+</script>
+{% endif %}
+{% endblock %}

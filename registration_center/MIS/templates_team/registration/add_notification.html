@@ -1,0 +1,48 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} Пользовательская информация {% endblock %}
+
+{% block content %}
+
+
+<div id="maincontent" class="ui main container">
+  <h4>Поликлиника {{id_polyclinic}}</h4>
+  <form action="." method="post" enctype="Multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-group" style="margin-bottom: 0px !important;position: unset;">
+      <!-- style="left: 20% !important;margin-bottom: none !important; position: none !important; left: none !important;"> -->
+
+
+      <div class="controls">
+        {{form.text}}
+      </div>
+    </div>
+    <!-- <div class="form-group"> -->
+
+    <ul style="list-style: none;margin-top: 30px;">
+      <li>
+        <label style="font-size: 20px;">
+          {{form.archive}}
+          {{form.archive.label}}
+        </label>
+      </li>
+    </ul><br>
+    <div class="controls">
+      <button class="custom_buttom">Добавить уведомление</button>
+    </div>
+    <!-- </div> -->
+  </form>
+  <script src="{% static 'ckeditor/ckeditor.js' %}"></script>
+  <script>
+    CKEDITOR.replace('id_text');
+  </script>
+</div>
+<style>
+  .custom_buttom {
+    cursor: pointer;
+    background-color: #908e8e !important;
+  }
+</style>
+
+{% endblock %}

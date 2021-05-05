@@ -1,0 +1,322 @@
+{% extends '../base_account.html' %}
+{% load static %}
+{% block title %} График работы сотрудника{% endblock %}
+{% block content %}
+<div id="maincontent" class="ui main container">
+    <div class="right floated six wide column" style="align-items: center;position: relative;display: grid;text-align: center;">
+		<div class="main-title">
+			<h3>Профиль сотрудника {{staff.name}}</h3>
+		</div>
+	</div>
+    <div class="column" style="margin-top: 30px;">
+		<div class="tabs" style="margin-bottom: 30px;">
+			<input type="radio" name="tab-btn" id="tab-btn-1" data-toggle="tab" value="" checked>
+			<label for="tab-btn-1">Профиль</label>
+			<input type="radio" name="tab-btn" id="tab-btn-2" data-toggle="tab" value="">
+			<label for="tab-btn-2">График работы</label>
+            <div id="content-1">
+                <div class="ui grid" style="display: flex; height: 250px;">
+                    <div class="left floated six wide column" style="margin: auto; display: flex; justify-content: center;">
+                        <h3>Профиль</h3><br>
+                    </div> 
+                    <div class="right floated four wide column " style="margin: auto;">
+                        <h3>{{message}}</h3>
+                        <div style="max-width: 215px;">
+                            {% if staff.photo %}
+                                <img src="{{ staff.photo.url }}" class='avatar'>
+                            {% else %}
+                                <img src="{% static 'img/doctor.png' %}" class='avatar'>
+                            {% endif %}
+                            <button class='fluid ui button' onclick="document.getElementById('сhange_avatar_modal').style.display='block'" style="width: 100%;"> Загрузить фото </button>
+                        </div>
+                    </div> 
+                </div>
+                <table class="ui small very compact unstackable selectable table" id='myTable_two'
+                style="text-align: center;">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">ФИО</th>
+                            <th>Категория</th>
+                            <th>Специальность</th>
+                            <th>Номер телефона</th>
+                            <th>Веб-телефон</th>
+                            <th>Права</th>
+                            <th>Логин</th>
+                            <th>Пароль</th>
+                            <th>Дата трудоустройства</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if staff %}
+                        <tr>
+                            <td class="id_staff" style="display: none;">{{staff.id}}</td>
+                            <td>
+                                <a href="{% url 'schedule_staff' staff.id %}">{{staff.fio}}</a>
+                            </td>
+                            <td>{{staff.category|default_if_none:"-"}}</td>
+                            <td>{{staff.specialty}}</td>
+                            <td>{{staff.phone}}</td>
+                            <td>
+                                {% if staff.onn_or_off_web_phone %}
+                                <img src="{%  static 'img/chek.png' %}" alt="" width="30px">
+                                {% else %}
+                                <img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px !important">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if staff.read_only_license %}
+                                <img src="{%  static 'img/chek.png' %}" alt="" width="30px">
+                                {% else %}
+                                <img src="{% static 'img/ban.svg' %}" alt="" style="width: 25px !important">
+                                {% endif %}
+                            </td>
+                            <td>{{staff.login}}</td>
+                            <td>{{staff.password}}</td>
+                            <td>{{staff.date_of_employment}}</td>
+                            <td>
+                                <img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_staff"
+                                    onclick="document.getElementById('staff-edit-modal-id').style.display='block'">
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="13" style="text-align: center;"> Нет данных !</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table> 
+            </div>
+
+            <div id="content-2">
+                <div class="ui grid">
+                    <div class="left floated six wide column">
+                        <h3>График работы</h3><br>
+                    </div> 
+                </div>
+                <table class="ui small very compact unstackable selectable orange table" id='myTable_two'
+                    style="text-align: center;">
+                    <thead>
+                        <tr>
+                            <th>День недели</th>
+                            <th>Время работы</th>
+                            <th>Кабинет</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if receiving_staffs %}
+                        {% for receiving_staff in receiving_staffs %}
+                        <tr>
+                            <td class="id_receiving_staff" style="display: none;">{{receiving_staff.id}}</td>
+                            <td>
+                                {{receiving_staff.days}}
+                            </td>
+                            {% if receiving_staff.start_work and receiving_staff.end_work and receiving_staff.room_number %}
+                            <td>
+                                {{receiving_staff.start_work}} - {{receiving_staff.end_work}}
+                            </td>
+                            <td>
+                                {{receiving_staff.room_number}}
+                            </td>
+                            {% else %}
+                            <td>
+                                Выходной
+                            </td>
+                            <td>
+                                -
+                            </td>
+                            {% endif %}
+                            <td>
+                                <img src="{% static 'img/set.png' %}" alt="" style="width: 18px;" class="edit_receiving_staff"
+                                    onclick="document.getElementById('receiving-staff-edit-modal').style.display='block'">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="13" style="text-align: center;"> Нет данных !</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table> 
+            </div>
+        </div>   
+    </div>
+
+</div>
+
+<!-- Edit receiving_staff -->
+<div id="receiving-staff-edit-modal" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_receiving_staff" action=""
+		style="margin: 1% auto 8% auto;width:45%" method="GET">
+		<div class="container" style="overflow-y: scroll; height: 350px;">
+			<label for="day_week">День недели</label>   
+			<input type="text" id="day_week" name="day_week"
+				class="input_add_note_doctor" readonly required>
+			<label for="begin_work">Начало рабочего дня</label>
+			<input type="time" id="begin_work" name="begin_work" class="input_add_note_doctor" required>
+			<label for="end_work">Конец рабочего дня</label>
+			<input type="time" id="end_work" name="end_work" class="input_add_note_doctor" required>
+			<label for="numb">Номер кабинет</label>
+			<input type="text" id="numb" name="numb" class="input_add_note_doctor" required>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_staff" type="submit"
+				onclick="document.getElementById('receiving-staff-edit-modal').style.display='block'">Редактировать
+			</button>
+			<br>
+			<button type='button' onclick="close_modal_receiving(event)" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+<!-- Change Avatar -->
+<div id="сhange_avatar_modal" class="modal" style="padding-top: 15% !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_receiving_staff" action="."
+		style="margin: 1% auto 8% auto;width:45%" method="POST" enctype="Multipart/form-data">
+        {% csrf_token %}
+		<div class="container" style="height: 150px;">
+			<label for="avatar">Выбирите фото:</label>   
+			<input type="file" id="avatar" name="avatar"
+				class="input_add_note_doctor" readonly required>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button change_avatar_staff" id="add_staff" type="submit" onclick="document.getElementById('сhange_avatar_modal').style.display='block'">
+                Редактировать
+			</button>
+            <br>
+			<!-- <button onclick="delete_avatar()" type="submit" class="fluid ui button" class="delete_avatar_staff">
+				Удалить
+			</button> -->
+			<br>
+			<button type='button' onclick="document.getElementById('сhange_avatar_modal').style.display='none'" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+<!-- Edit staff -->
+<div id="staff-edit-modal-id" class="modal" style="padding-top: 0 !important;overflow: hidden;">
+	<form class="modal-content animate modal_edit_staff" action=""
+		style="margin: 1% auto 8% auto;width:45%" method="GET">
+		<div class="container" style="overflow-y: scroll;    height: 350px;">
+			<label for="edit_login_staff">Логин</label>
+			<input type="text" id="edit_login_staff" pattern="^[a-zA-Z\s]+$" onkeyup="limitInput( 'en', this );" name="login_staff"
+				class="input_add_note_doctor" required>
+			<label for="add_fio">Фамилия</label>
+			<input type="text" id="edit_surname" name="name_staff" class="input_add_note_doctor" required>
+			<label for="add_fio">Имя</label>
+			<input type="text" id="edit_name" name="surname_staff" class="input_add_note_doctor" required>
+			<label for="add_fio">Отчество</label>
+			<input type="text" id="edit_patronymic" name="patronymic_staff" class="input_add_note_doctor" required>
+			<label for="edit_address_staff">Адрес проживания</label>
+			<input type="text" id="edit_address_staff" name="edit_address" class="input_add_note_doctor" required>
+			<label for="edit_address">Пароль</label>
+			<input type="text" id="edit_staff_password" name="edit_staff_password" class="input_add_note_doctor" required>
+			<label for="add_specialty_staff">Cпециальность</label>
+			<input type="text" id="add_specialty_staff" name="specialty_staff" class="input_add_note_doctor" required>
+			<label for="add_phone">Hомер телефона</label>
+			<input type="tel" pattern="^\+7\d{3}\d{7}$" id="edit_phone_staff" name="phone_staff" class="input_add_note_doctor">
+			<label for="scales"><input type="checkbox" id="onn_or_off_web_phone_edit_staff" name="onn_or_off_web_phone_edit_staff"> Включён веб телефон</label><br><br>
+			<label for="date_of_birth">Дата рождения</label>
+			<input type="date" class="input_add_note_doctor" id="date_of_birth_staff" name="date_of_birth_staff">
+			<label for="date_of_birth">Дата трудоустройства</label>
+			<input type="date" class="input_add_note_doctor" id='date_of_employment_staff' name="date_of_employment_staff">
+			<label for="date_of_birth">Дата увольнения</label>
+			<input type="date" class="input_add_note_doctor" id='date_of_dismissal_staff' name="date_of_dismissal_staff">
+			<div class="div_add_staff">
+				<label for="">Категор(ия/ии)</label><br>
+				<select name="category_staff" id="category_staff" class="input_add_note_doctor" required>
+					{%for i in category%}
+						<option value="{{i.id}}" {% if doctor.category.id == i.id %}selected{% endif %}>{{i}}</option>
+					{%endfor%}
+				</select>
+			</div>
+			<input type="checkbox" id="present" name="present">
+			<label for="scales">Присутствует на работе</label>
+		</div>
+		<div class="modal-footer" style="margin-top: 0;">
+			<button class="fluid ui button" id="add_staff" type="submit"
+				onclick="document.getElementById('staff-edit-modal-id').style.display='block'">Редактировать
+			</button>
+			<br>
+			<button onclick="document.getElementById('staff-edit-modal-id').style.display='none'" class="fluid ui button">
+				Отмена
+			</button>
+		</div>
+	</form>
+</div>
+
+<script src="{% static 'js/schedule_staff.js' %}"></script>
+<script>
+    function get_a_staff_info(id_staff) {
+		var list = {}
+
+		$.ajax({
+			url: "/get_a_staff_info/" + id_staff + "/",
+			dataType: 'json',
+			success: function (response) {
+				var data_mess = '';
+				var data = ''
+				for (i in response) {
+					list = {
+						'id' : response[i].id,
+						'name' : response[i].name,
+						'surname' : response[i].surname,
+						'patronymic' : response[i].patronymic,
+						'date_of_birth' : response[i].date_of_birth,
+						'address' : response[i].address,
+						'polyclinic' : response[i].polyclinic,
+						'date_of_employment' : response[i].date_of_employment,
+						'date_of_dismissal' : response[i].date_of_dismissal,
+						'present' : response[i].present,
+						'specialty' : response[i].specialty,
+						'phone' : response[i].phone,
+						'onn_or_off_web_phone_staff': response[i].onn_or_off_web_phone,
+						'login' : response[i].login,
+						'password' : response[i].password,
+						'category' : response[i].category,
+					}
+				}
+				console.log(list)
+				let url = '/edit_staff/' + list.id + '/{{polyclinic_info.id}}/';
+
+				$('.modal_edit_staff').attr('action', url);
+				$('#edit_login_staff').val(list.login);
+				$('#edit_staff_password').val(list.password);
+				$('#edit_address_staff').val(list.address);
+				if (list.onn_or_off_web_phone_staff) {
+					$('#onn_or_off_web_phone_edit_staff').prop('checked', true);
+				}
+				else{$('#onn_or_off_web_phone_edit_staff').prop('checked', false);}
+				$('#edit_surname').val(list.surname);
+				$('#edit_name').val(list.name);
+				$('#edit_patronymic').val(list.patronymic);
+				$('#add_specialty_staff').val(list.specialty);
+				$('#edit_phone_staff').val(list.phone);
+				$('#date_of_birth_staff').val(list.date_of_birth);
+				$('#date_of_employment_staff').val(list.date_of_employment);
+				$('#date_of_dismissal_staff').val(list.date_of_dismissal);
+				$('#category_staff').val(list.category);
+
+
+
+
+
+				document.getElementById('checkboxes_edit_group').innerHTML = list.option_data;
+			}
+		});
+	}
+
+    // function delete_avatar() {
+    //     console.log({{staff.id}})
+    //     let url = '/delete_avatar/' + {{staff.id}};
+    //     console.log(url)
+    //     $('.сhange_avatar_modal').attr('action', url);
+    // }
+</script>
+{% endblock %}

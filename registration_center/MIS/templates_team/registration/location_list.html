@@ -1,0 +1,102 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %} По запросу {% endblock %}
+
+{% load chek_writer_extras %}
+{% block content %}
+
+<div id="maincontent" class="ui main container">
+    <div class="main-title">
+        <form method="GET" action="{% url 'SearchFilter' %}">
+            <input type="search" name="s" id="search" placeholder="Улица" required
+                value="{% if name_search %}{{name_search}}{% endif%}">
+            <input type="search" name="b" id="search" placeholder="Дом"
+                value="{% if numb_search %}{{numb_search}}{% endif%}">
+            <select name="branch" required>
+                <option value=""></option>
+                {% for i in branch %}
+                <option value="{{i.0}}" {% if i.0 == branch_name %} selected="select" {% endif %}>{{i.0}}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">
+                Найти
+            </button>
+        </form><br>
+    </div>
+    <div class="ui stackable grid">
+        <div class="twenty wide column">
+            <div class="main-title">
+                <h3>По заданному запросу ... </h3>
+            </div>
+            <table class="ui small very compact unstackable selectable orange table" id="myTable_two">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(4)">Мед. Учреждание</th>
+                        <th></th>
+                        <th onclick="sortTable(4)">Дом</th>
+                        <th onclick="sortTable(4)">Улица</th>
+                        <th>Подразделение</th>
+                        <th onclick="sortTable(4)">Участок</th>
+                        <th onclick="sortTable(2)">Email</th>
+                        <th onclick="sortTable(1)">Контактные Данные</th>
+                        <th>Записать пациента</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if location_list %}
+                    {% for locations in location_list %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'detail_views' locations.polyclinic.id %}">
+                                {{locations.polyclinic.name}}</a>
+                        </td>
+                        <td>
+                            {% if locations.subdivision.branch %}{{subdivision.branch}}{% else %}
+                            ----- {% endif %}
+                        </td>
+                        <td>
+                            {{locations.building}}
+                        </td>
+                        <td>
+                            {{locations.street}}
+                        </td>
+                        <td>
+                            {{locations.subdivision_polyclinics}}
+                        </td>
+                        <td>
+                            {{locations.zone}}
+                        </td>
+                        <td>
+                            {% if locations.polyclinic.email %}{{locations.polyclinic.email}}{% else %}------{% endif %}
+                        </td>
+                        <td>
+                            {% if locations.polyclinic.contact %}{{locations.polyclinic.contact}}{% else %}-----{% endif %}
+                        </td>
+                        <td>
+                            {% if request.user.is_authenticated %}
+                            {{locations|set_or_redirect|safe}}
+                            {% else %}
+                            {% if locations.polyclinic.id|chek_write   %}
+                            {{locations|set_or_redirect|safe}}
+                            {% else %}
+                            Запись не возможна!
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="12" style="text-align: center;"> Нет данных !</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/location_list.js' %}"></script>
+
+{% endblock %}

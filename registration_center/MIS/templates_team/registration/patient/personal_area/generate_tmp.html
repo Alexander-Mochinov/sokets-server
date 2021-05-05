@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load chek_writer_extras %}
+{% load tags %}
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="{% static 'css/main.css' %}" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="{% static 'css/sinematic.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/icon.css' %}">
+	<link rel="stylesheet" href="{% static 'css/icon.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/font-awesome.css' %}">
+	<link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+	<script src="{% static 'js/jq2.js' %}"></script>
+	<script src="{% static 'js/semantic.min.js'%}"></script>
+	<script src="https://kit.fontawesome.com/4dda9e4022.js" crossorigin="anonymous"></script>
+
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css" /> -->
+
+	{% block script %}{% endblock %}
+	<title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+	<nav role='navigation'>
+		<div id="" class="ui main container">
+			<div class="ui stackable grid">
+				<div class="three wide column">
+					<img src="{% static 'img/logo.png' %}" alt="" style="padding: 17px;width: 105%;align-items: center;margin-left: 0px !important;">
+				</div>
+			
+		<div class="twelve wide column">
+			<ul>
+				<li><a href=""></a>
+					<ul class="m-auto">
+						<li>
+							<a href=""></a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+			<ul class="right-menu">
+				<li>
+					{% if request.user.is_authenticated %}
+					<a href="{% url 'logout' %}" class="header item">Выйти</a>
+					{% else %}
+						<a href="{% url 'login' %}" class="">Войти</a>
+					{% endif %}
+				</li>
+				<!-- <li><a href="#"></a></li> -->
+			</ul>
+		</div>
+	</div>
+</div>
+	</nav>
+
+<style>
+.icon-menu{
+	display: flex !important;
+    align-items: center !important;
+}
+.icon_menu_img{
+	width: 22px !important;
+	margin-right: 10px !important;
+}
+
+.ui.accordion .accordion .active.title .minus, .ui.accordion .active.title .minus, .ui.accordion.menu .item .active.title>.minus {
+    -webkit-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+</style>
+<div id="maincontent" class="ui main container">
+	<div class="ui stackable grid">
+		<div class="four wide column">
+			{% if request.user.is_authenticated %}
+			<div class="ui secondary vertical menu">
+
+				<div class="ui accordion item">
+					<a class="title" id='title_acc' style="display: flex !important;align-items: center !important;"> 
+						Биометрические данные  <span class="minus" style="font-size: 20px;margin-left: 5px;transition: 0.4s;"><b>»</b></span>
+						<!-- <img  src="{% static 'img/min.png' %}" alt="" style="width: 13px !important;align-items: center !important;margin-left: 5px;display: none;" class="minus"><img class="plus" src="{% static 'img/plus.png' %}" alt="" style="width: 13px !important;align-items: center !important;margin-left: 5px;"> -->
+					
+					</a>
+					<div class="content">
+						<a class="item" href="{% url 'oxygenation' %}">Оксигенация</a>
+						<a class="item" href="{% url 'heart_rate' %}">Пульс</a>
+					</div>
+				</div>
+				
+				<!-- <a href="" class="active item icon-menu"><img class="icon_menu_img" src="{% static 'img/u41.png' %}" alt="">История болезни</a> -->
+				<!-- <a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u42.png' %}" alt=""> Назначения</a> -->
+				<!-- <a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u44.png' %}" alt=""> Талоны</a> -->
+				<a href="{% url 'call_list' %}" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u43.png' %}" alt=""> Вызовы врача</a>
+				<a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u45.png' %}" alt=""> Анализы</a>
+				<!-- <a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u46.png' %}" alt=""> Больничные листы</a> -->
+				<!-- <a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u51.png' %}" alt=""> Электронные рецепты</a> -->
+				<!-- <a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u50.png' %}" alt=""> УЗИ</a> -->
+				<!-- <a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u49.png' %}" alt=""> Рентген снимки</a>
+				<a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u48.png' %}" alt=""> Флюорография</a>
+				<a href="" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u47.png' %}" alt=""> Вакцинации</a> -->
+				<a href="{% url 'edit_profile' %}" class="item icon-menu"><img class="icon_menu_img" src="{% static 'img/u52.png' %}" alt=""> Редактировать профиль</a>
+			</div>
+			{% endif %}
+		</div>
+		<div class="{% if request.user.is_authenticated %}twelve{% else %} seven {% endif %}wide column">
+			{% block content %}
+			{% endblock %}
+		</div>
+	</div>
+</div>
+<script>
+
+$('.title').on('click', function (e) {
+  localStorage.setItem('lastTab', 'title_acc');
+
+  if (localStorage.getItem('is_opened') == 'true') {
+    localStorage.setItem('is_opened', false);
+    console.log('set false');
+    console.log(localStorage.getItem('is_opened'));
+
+  }
+  else {
+    localStorage.setItem('is_opened', true);
+    console.log('set true');
+    console.log(localStorage.getItem('is_opened'));
+  }
+
+
+});
+$(window).load(function () {
+  var lastTab = localStorage.getItem('lastTab');
+
+  if (localStorage.getItem('is_opened') == 'true') {
+    $('#' + lastTab).trigger('click');
+  }
+}); 
+
+</script>
+<script>
+$('.ui.accordion').accordion({
+   selector: {}
+ });
+
+$('.plus').on('click', function(){
+	$(this).css('display','none');
+	$('.minus').css('display','block')
+});
+
+$('.minus').on('click', function(){
+	$(this).css('display','none');
+	$('.plus').css('display','block')
+});
+
+
+// $('.title').on('click', function(){
+// 	$('.plus').css('display','none');
+// 	$('.minus').css('display','block')
+// });
+
+// $('.active').on('click', function(){
+// 	$('.minus').css('display','none');
+// 	$('.plus').css('display','block')
+// });
+
+ 
+</script>
+
+</body>
+
+</html>

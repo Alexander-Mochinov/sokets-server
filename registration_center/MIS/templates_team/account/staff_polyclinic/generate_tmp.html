@@ -1,0 +1,23 @@
+{% extends "base_template.html" %}
+{% load tags %}
+{% load static %}
+
+{% block content %}
+<div class="ui main container">
+	<div class="ui stackable grid">
+		<div class="five wide column" id="left_menu">
+			{% include '../../../include/left_menu.html' %}
+		</div>
+		<div class="{% if  request.user.is_authenticated %} eleven {% else %} seven {% endif %}wide column" id="content_tmp">
+			{% block content_sub %}
+			{% endblock %}
+		</div>
+	</div>
+</div>
+<style>
+#content_tmp{
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+{% endblock %}

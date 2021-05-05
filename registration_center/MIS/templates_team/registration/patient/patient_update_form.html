@@ -1,0 +1,141 @@
+{% extends 'base_template.html' %}
+{% load static %}
+{% block title %}Обновление записи{% endblock %}
+
+{% block content %}
+<div id="maincontent" class="ui main container">
+  <form action="." method="post" enctype="Multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <h2 class="heading">Обязательные поля помечены звёздочками (*) </h2>
+              
+        <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.surname.errors}}</div><br>
+        <div class="controls">
+          {{form.surname}}
+          <label for="fio" class="active">Фамилия:</label><br>
+        </div><br>
+        <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.name.errors}}</div><br>
+        <div class="controls">
+          {{form.name}}
+          <label for="fio" class="active">Имя:</label><br>
+        </div>
+        <br>
+        <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.patronymic.errors}}</div><br>
+        <div class="controls">
+          {{form.patronymic}}
+          <label for="fio" class="active">Отчество:</label><br>
+        </div><br>
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.date_of_birth.errors}}</div>
+      <div class="controls">
+        {{form.date_of_birth}}
+        <label for="date_of_birth" class="active">Дата рождения:<span style="color: red;">*</span></label>
+      </div>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.address.errors}}</div><br>
+      <div class="controls">
+        {{form.address}} <br>
+        <label for="entrance" class="active">Адресность:<span style="color: red;">*</span></label>
+      </div>
+
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.address_fk.errors}}</div><br>
+      <div class="controls">
+        {{form.address_fk}} <br>
+        <label for="entrance" class="active">Установить адерс:<span style="color: red;">*</span></label>
+      </div>
+
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.flat.errors}}</div>
+      <div class="controls">
+        {{form.flat}}
+        <label for="entrance" class="active">Квартира №:<span style="color: red;">*</span></label>
+      </div>
+
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.entrance.errors}}</div>
+      <div class="controls">
+        {{form.entrance}}
+        <label for="entrance" class="active">Подъезд №:<span style="color: red;">*</span></label>
+      </div>
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.floor.errors}}</div>
+      <div class="controls">
+        {{form.floor}}
+        <label for="floor" class="active">Этаж дома:<span style="color: red;">*</span></label>
+      </div>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.intercom_code.errors}}</div>
+      <div class="controls">
+        {{form.intercom_code}}
+        <label for="intercom_code" class="active">Код домофона:<span style="color: red;">*</span></label>
+      </div>
+    </div>
+    <div class="form-group">
+      <h2 class="heading" class="active">Контактные данные:</h2>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.phone.errors}}</div>
+      <div class="controls">
+        {{form.phone}}
+        <label for="phone" class="active">Телефон:<span style="color: red;">*</span></label>
+      </div>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.SNILS.errors}}<br></div>
+      <div class="controls">
+
+        {{form.SNILS}}
+        <label for="SNILS" class="active">СНИЛС: </label>
+      </div>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.C_M_O_policy.errors}}</div>
+      <div class="controls">
+        {{form.C_M_O_policy}}
+        <label for="C_M_O_policy" class="active">Полис ОМС: </label>
+
+      </div>
+      <div class="controls">
+        <i class="fa fa-sort"></i>
+        {{form.polyclinic}}
+        <label for="fruit" class="active">Мед. Учреждение:<span style="color: red;">*</span></label>
+      </div>
+    </div>
+    <div class="form-group">
+
+      <h2 class="heading" class="active">Причины:</h2>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.temperature.errors}}</div>
+      <div class="controls">
+        {{form.temperature}}
+        <label for="comments" class="active">Темпереатура:<span style="color: red;">*</span></label>
+      </div>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.cough.errors}}</div>
+      <div class="controls">
+        {{form.cough}}
+        <label for="comments" class="active">Кашель:<span style="color: red;">*</span></label>
+      </div>
+
+      <div class="alert alert-danger" style="font-size: 15px; color: red;">{{form.smell.errors}}</div>
+      <div class="controls">
+        {{form.smell}}
+        <label for="comments" class="active">Обоняние:<span style="color: red;">*</span></label>
+      </div>
+      <div class="controls">
+        {{form.reason_for_calling}}
+        <label for="comments" class="active">Причина вызова, (в том числе Актив):<span
+            style="color: red;">*</span></label>
+        <button>Добавить запись</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+{{ form.media }}
+
+<style>
+  #maincontent{
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}

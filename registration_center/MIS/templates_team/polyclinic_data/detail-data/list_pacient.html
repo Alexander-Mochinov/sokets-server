@@ -1,0 +1,337 @@
+{% extends '../base_template.html' %}
+{% load static %}
+{% block title %}  {% endblock %}
+{% load chek_writer_extras %}
+{% block content %}
+<div id="modal_edit" class="modal">
+
+	<form class="modal-content animate" method="POST" id="change_data_form">
+		{% csrf_token %}
+		<div class="container">
+			<label for="psw"><b>Причина отмены вызова:</b></label>
+			<textarea cols="30" rows="10" name="reason_for_renouncement" class="input_add_note"></textarea>
+			<button class="fluid ui button"
+				onclick="document.getElementById('modal_edit').style.display='block'">Отменить вызов</button>
+		</div>
+
+		<div class="container" style="background-color:#f1f1f1">
+			<button type="button" onclick="document.getElementById('modal_edit').style.display='none'"
+				class="fluid ui button">Отмена</button>
+		</div>
+	</form>
+</div>
+
+
+<div id="maincontent" class="ui main container-fluid">
+	<div class="ui stackable grid">
+		<div class="ui main container">
+			<div class="twenty wide column">
+				<div class="ui grid">
+
+					<div class="left floated six wide column" style="text-align: left;">
+						<!-- <div class="ui grid"> -->
+							<div class="nine wide column">
+								<h3>Список пациентов</h3>
+								<form method="POST" action="{% url 'page_read_only_for_polyclynic' %}">
+									<label for="">Дата: </label><br>
+									<label for=""> <b>C</b></label>{% csrf_token %}
+									<input type="date" name="date_to" id="search" value="{{date_to}}">
+									<label for=""> <b>По</b> </label>
+									<input type="date" name="date" id="search"
+										value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}"><br><br>
+									<label for="">Время:</label><br>
+									<label for=""> <b>C</b></label>
+									<input type="time" name='time_from' value="{{time_from_search}}">
+									<label for=""> <b>По</b> </label>
+									<input type="time" name='time_to' value="{{time_to_search}}"><br><br>
+									<label for="">Мед. учреждение</label><br>
+									<select name="select_polyclinic">
+										{% for i in title_polyclinic %} 
+										<option value="{{i.id}}" {% if int.chek_id_polyclinic == int.i.id %}
+											selected="selected" {% endif %}>{{i}}
+										</option>
+										{% endfor %}
+									</select><br><label for="">Лечащий врач</label><br>
+									<select name="select_a_doctor">
+										<option value="">-----</option>
+										{% for i in doctor %}
+										<option value="{{i.id}}">
+											{{i}}
+										</option>
+										{% endfor %}
+									</select><br><br>
+									<button type="submit">
+										Найти запись
+									</button>
+									<br><br>
+									<p>Примените фильтр чтобы скачать данные в exel</p>
+									<div class=" six wide column" style="text-align: left;">
+										<div class="main-title">
+											
+											<form action="{% url 'set_auto_update' %}" method="POST">
+												{% csrf_token %}
+												<label onclick="document.getElementById('update').click();">
+													<input type="checkbox" id="auto_update" name="chek_update"
+														{% if autoupdate %}checked{%  endif%} /> Авто
+													обновление списка
+												</label>
+												<button type="submit" id="update" style="display: none;">UPDATE</button>
+											</form><br>
+										</div>
+									</div>
+								</form>
+							</div>
+						<!-- </div> -->
+					</div>
+					<div class="right floated ten wide column"
+						style="text-align: center;text-decoration: none;list-style: none;font-size: 12px;">
+						<form method="GET" action=".">
+							<input type="search" name="s" id="search_street" required placeholder="Улица">
+							<input type="search" name="b" id="search_house" placeholder="Дом">
+							<button onclick="Search_address();" type="button">
+								Найти
+							</button>
+						</form>
+					</div>
+					<style>
+						th,
+						td {
+							padding: 0px;
+						}
+					</style>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="ui container-fluid" style="padding: 35px;">
+		<table class="ui  very compact unstackable selectable olive table" id="myTable_two">
+			<thead style="font-size: 11px;">
+				<tr>
+					<th>№</th>
+					<th width="120">Ф.И.О.</th>
+					<th>Адрес</th>
+					<th width="90">Дата рождения</th>
+					<th width="90">Aдрес проживания</th>
+					<th width="90">Контактный номер телефона</th>
+					<th onclick="sortTable(0)">Поликлиника</th>
+					<th id='dateCol' style='cursor:pointer;'>Время записи</th>
+					<th style="max-width: 150px; text-align: center;">Жалобы</th>
+					<th style="width: 100px;">Тип вызова</th>
+					<th>Доктор</th>
+					<th>Оператор</th>
+					<th style="text-align: center;" width="40">Вызов передан</th>
+					<th width="40">Вызов отработан</th>
+					<th></th>
+				</tr>
+			</thead>
+
+			<tbody style="font-size: 11px;    ">
+				{% if persons %}
+				{% for count, person in persons %}
+
+				<tr
+					style="padding: 0px; {% if person.address_fk %}{% else %}background: rgb(255 2 2 / 8%)!important;{% endif %}">
+					<td>{{count}}</td>
+					<td>{{person.fio}}</td>
+					<td>{{person.address_fk}}</td>
+					<td>{{person.date_of_birth}}</td>
+
+					<td>
+						{{person.address}} кв.{{person.flat}}, <br>этаж: {{person.floor}}, п.
+						{{person.entrance}}<br>код домофона:{{person.intercom_code}}
+					</td>
+					<td>{{person.phone}}</td>
+					<td>{{person.polyclinic}}</td>
+					<td>{{person.recording_time|date:"Y-m-d G:i"}}</td>
+					<td style="max-width: 150px; text-align: center;">{{person.reason_for_calling}}</td>
+					<td>
+						{% if person.call_cancellation %}
+						<a href="">
+							<label>
+								Отказ</label>
+						</a>
+						{% else %}
+						<!-- <input type="radio" {% if person.call_cancellation  %} checked {% endif  %}
+						                                    class="radio_button" disabled checked><br> -->
+
+						<input type="radio" class="radio_button" disabled name="c" id="c0" checked="checked" />
+						<label for="c0" {% if person.type_call %} style="background: #2ecc71;" {% else %}
+							style="background: #ea0626b5" {% endif %}></label><br>
+						{% for i in type_call %}
+
+						<label><input id="person_{{person.id}}_{{i.id}}" name="type_call" type="checkbox"
+								{% if person.type_call.id == i.id %} checked {% endif %} name="group{{person.id}}[]"
+								value="{{i.id}}" onclick="cheked_box('person_{{person.id}}_{{i.id}}','{{person.id}}')">
+							{{i}}</label> <br>
+
+						{% endfor %}
+						<input type="checkbox" name="group{{person.id}}[]" id="renouncement_{{person.id}}"
+							onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+						<label for="renouncement_{{person.id}}"
+							onclick="cancell_call('renouncement_{{person.id}}','{{person.id}}');">
+							Отказ</label>
+
+						{% endif %}
+
+					</td>
+					<td>{% if person.doctor %}{{person.doctor}}{% endif %}</td>
+					<td>{% if person.operator  %}{{person.operator}}{% else %} ----- {% endif %}</td>
+					<td style="text-align: center;">
+						{% if person.сall_transferred %}
+						<img onclick="chek_call('call_is_{{person.id}}');$.ajax({type: 'GET',url: '/cheked/{{person.id}}/',success: function (data) {},error: function (jqXHR, text, error) {}});return false;"
+							id="call_is_{{person.id}}" src="{% static 'img/check.svg' %}" class="check_call" alt=""
+							style="width: 35% !important">
+						{% else %}
+						<img onclick="chek_call('call_is_{{person.id}}'); $.ajax({type: 'GET',url: '/cheked/{{person.id}}/',success: function (data) {},error: function (jqXHR, text, error) {}});return false;"
+							id="call_is_{{person.id}}" src="{% static 'img/ban.svg' %}" class="ban_call" alt=""
+							style="width: 35% !important">
+						{% endif %}
+					</td>
+					<td style="text-align: center;">
+						{% if person.close_call %}
+						<img src="{% static 'img/check.svg' %}" alt="" style="width: 33% !important">
+						{% else %}
+						<img src="{% static 'img/ban.svg' %}" alt="" style="width: 33% !important">
+						{% endif %}
+					</td>
+					<td><a href="{% url 'Patient_registration_update' person.pk %}"><img
+								src="{% static 'img/set.png' %}" alt="" style="width: 18px;"></a></td>
+					<!-- <td><a href="{% url 'Patient_registration_delete' person.pk %}" >Удалить</a></td> -->
+				</tr>
+				{% endfor %}
+				{% else %}
+				<tr>
+					<td colspan="15" style="text-align: center;"> Нет данных !</td>
+				</tr>
+				{% endif %}
+			</tbody>
+		</table>
+		<br>
+		{% if chek_id_polyclinic and persons %}
+		<form action="{% url 'download_file_for_account'  id_polyclinic_for_download   %}" method="POST">
+			{% csrf_token %}
+			<input type="hidden" name="date_to" id="search" value="{{date_to}}">
+			<input type="hidden" name="date_h" id="search"
+				value="{% if date_search %}{{date_search}}{% else %}{{date_now}}{% endif %}">
+			<input type="hidden" name='time_from_h' value="{{time_from_search}}">
+			<input type="hidden" name='time_to_h' value="{{time_to_search}}">
+			<input type="hidden" name='select_a_doctor' value="{{select_a_doctor}}">
+
+			<button>Скачать данные</button>
+		</form>
+		{% else %}
+		{% for i in title_polyclinic %}
+		<a href="{% url 'download_all_file_for_account' i.id %}"><button>Скачать список по поликлиники
+				{{i}}</button></a><br>
+		{% endfor %}
+		{% endif %}
+	</div>
+
+</div>
+
+<div id="address_modal" class="modal" style="padding-top: 0 !important; overflow: hidden;">
+    <div class="table" style="background-color:rgb(255, 255, 255); display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 4% auto 1% auto;width:80%">
+        <div class="container" style="overflow-y: scroll;height: 450px;width: 100%;">
+            <table class="ui small very compact unstackable selectable orange table" id="addr_table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(4)">Мед. Учреждание</th>
+                        <th onclick="sortTable(4)">Дом</th>
+                        <th onclick="sortTable(4)">Улица</th>
+                        <th onclick="sortTable(4)">Участок</th>
+                        <th onclick="sortTable(2)">Email</th>
+                        <th onclick="sortTable(1)">Контактные Данные</th>
+                        <th>Записать пациента</th>
+                    </tr>
+                </thead>
+                <tbody id="address" style="overflow-y: scroll;height: 400px;">
+                </tbody>
+            </table>
+            <div id="text_not_found" style="text-align: center;"></div>
+        </div>
+        <button type="button" onclick=" CloseTable()"
+                class=" fluid ui button" style="width: 50%; margin: 2%;">Закрыть
+        </button>
+    </div>
+</div>
+
+
+<script src="{% static 'js/sort_table.js' %}"></script>
+<script src="{% static 'js/date_sort.js' %}"></script>
+<script src="{% static 'js/list_pacient.js' %}"></script>
+{% if autoupdate %}
+{% if reset_filters %}
+<script>
+	setTimeout(function () {
+		window.location.reload(1);
+	}, 20000);
+</script>
+{% else %}
+{% endif %}
+{% endif %}
+<script>
+	// Костыльный вариант 
+	function chek_call(id) {
+		let img = document.getElementById(id)
+		// if (сall_transferred == undefined) {
+		// } else {
+		// }
+		var class_click = $(img).attr("class");
+		console.log(class_click)
+		if (class_click == "check_call") {
+			img.classList.remove("check_call")
+			img.classList.add("ban_call");
+			img.src = "{% static 'img/ban.svg' %}";
+		}
+		if (class_click == "ban_call") {
+			img.classList.remove("ban_call")
+			img.classList.add("check_call");
+			img.src = "{% static 'img/check.svg' %}";
+		}
+
+	}
+	$(document).ready(function () {
+		$('#dateCol').click(function () {
+			sortTable_Date(6);
+		});
+	});
+</script>
+<script>
+	// $('input[type="checkbox"]').on('change', function () {
+	// 	let str = $(this).parents('td');
+	// 	if (input.checked) {
+	// 		$('input[name="' + this.name + '"]').prop('checked', false);
+	// 	}
+	// 	else {
+	// 		$('input[name="' + this.name + '"]').not(this).prop('checked', false);
+	// 	}
+	// 	// $('input[name="' + this.name + '"]').not(this).prop('checked', false);
+	// });
+</script>
+<style scoped>
+	.modal {
+		display: none;
+		position: fixed;
+		z-index: 999999;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color: rgb(0, 0, 0);
+		background-color: rgba(0, 0, 0, 0.4);
+		padding-top: 60px;
+	}
+
+	.modal-content {
+		background-color: #fefefe;
+		margin: 5% auto 15% auto;
+		border: 1px solid #888;
+		width: 50%;
+	}
+
+	.container {
+		padding: 16px;
+	}
+</style>
+{% endblock %}
